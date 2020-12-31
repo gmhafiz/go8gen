@@ -9,7 +9,7 @@ import (
 
 var BinFS = &binclude.FileSystem{Files: binclude.Files{
 	"..": {
-		Filename: "..", Mode: 0o20000000777, ModTime: time.Unix(1609423999, 1609423999162014746), Compression: 0,
+		Filename: "..", Mode: 0o20000000777, ModTime: time.Unix(1609426634, 1609426634911161344), Compression: 0,
 	},
 	"../tmpl": {
 		Filename: "tmpl", Mode: 0o20000000775, ModTime: time.Unix(1609423426, 1609423426931418066), Compression: 0,
