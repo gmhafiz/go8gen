@@ -75,7 +75,7 @@ var newCmd = &cobra.Command{
 		projectName := args[0]
 
 		syscall.Umask(0)
-		err := os.Mkdir(projectName, os.ModePerm)
+		err := os.Mkdir(projectName, 0755)
 		if err != nil {
 			log.Fatalf("error creating directory: %s", projectName)
 		}
@@ -254,7 +254,7 @@ func parseVersion(version string) *Semver {
 func createDirectories(directories []string, projectName string) error {
 	for _, val := range directories {
 		syscall.Umask(0)
-		err := os.MkdirAll(val, os.ModePerm)
+		err := os.MkdirAll(val, 0755)
 		if err != nil {
 			return err
 		}
