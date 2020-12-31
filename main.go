@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go8gen/cmd"
+	"github.com/gmhafiz/go8gen/cmd"
 )
 
 // declaring struct

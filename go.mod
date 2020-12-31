@@ -1,4 +1,4 @@
-module go8gen
+module github.com/gmhafiz/go8gen
 
 go 1.15
 
