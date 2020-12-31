@@ -1,8 +1,9 @@
 package cmd
 
+//go:generate binclude
+
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -12,9 +13,12 @@ import (
 	"syscall"
 	"text/template"
 
+	"github.com/lu4p/binclude"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
+
+var tmplPath = binclude.Include("../tmpl")
 
 var (
 	directories []string
@@ -188,6 +192,16 @@ var newCmd = &cobra.Command{
 				FileName:         fmt.Sprintf("README.md"),
 				Parse:            false,
 			},
+			{
+				TemplateFileName: "../tmpl/docker-compose.yml.tmpl",
+				FileName:         fmt.Sprintf("docker-compose.yml"),
+				Parse:            false,
+			},
+			{
+				TemplateFileName: "../tmpl/Dockerfile.tmpl",
+				FileName:         fmt.Sprintf("Dockerfile"),
+				Parse:            false,
+			},
 		}
 		err = createFiles(projectName, "", structures)
 		if err != nil {
@@ -295,7 +309,8 @@ func parseFile(file *os.File, tmplFileName string, vars struct{ ProjectName, Dom
 }
 
 func copyFile(fileName, tmplFileName string) error {
-	tmplContent, err := ioutil.ReadFile(tmplFileName)
+	tmplContent, err := BinFS.ReadFile(tmplFileName)
+
 	if err != nil {
 		return errors.Wrapf(err, "error reading file: %s", tmplFileName)
 	}

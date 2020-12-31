@@ -84,7 +84,7 @@ var domainCmd = &cobra.Command{
 			log.Fatalf(ErrorColor, err)
 		}
 
-		err = injectCode(domain)
+		err = injectCode(projectName, domain)
 		if err != nil {
 			log.Fatalf(ErrorColor, err)
 		}
@@ -93,16 +93,16 @@ var domainCmd = &cobra.Command{
 	},
 }
 
-func injectCode(domain string) error {
+func injectCode(projectName, domain string) error {
 	const serverFileName = "internal/server/server.go"
 	const injectImport = "// inject:import"
 	const injectApp = "//inject:app"
 	const injectUseCase = "// inject:usecase"
 	const injectHandler = "// inject:handler"
 	Domain := strings.Title(domain)
-	importTmpl1 := fmt.Sprintf(`%sHTTP "ca/internal/domain/%s/handler/http"`, domain, domain)
-	importTmpl2 := fmt.Sprintf(`%sPostgres "ca/internal/domain/%s/repository/postgres"`, domain, domain)
-	importTmpl3 := fmt.Sprintf(`%sUseCase "ca/internal/domain/%s/usecase"`, domain, domain)
+	importTmpl1 := fmt.Sprintf(`%sHTTP "%s/internal/domain/%s/handler/http"`, domain, projectName, domain)
+	importTmpl2 := fmt.Sprintf(`%sPostgres "%s/internal/domain/%s/repository/postgres"`, domain, projectName, domain)
+	importTmpl3 := fmt.Sprintf(`%sUseCase "%s/internal/domain/%s/usecase"`, domain, projectName, domain)
 	appTmpl := fmt.Sprintf(`%sUC *%sUseCase.%sUseCase`, domain, domain, Domain)
 	usecaseTmpl := fmt.Sprintf(`%sUC: %sUseCase.New%sUseCase(%sPostgres.New%sRepository(db)),`, domain, domain, Domain, domain, Domain)
 	handlerTmpl := fmt.Sprintf(`%sHTTP.RegisterHTTPEndPoints(router, a.%sUC)`, domain, domain)
