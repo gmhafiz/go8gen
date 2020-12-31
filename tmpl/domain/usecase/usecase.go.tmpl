@@ -1,0 +1,39 @@
+package usecase
+
+import (
+	"context"
+
+	"{{ .ProjectName }}/internal/domain/{{ .DomainLowerCase }}"
+	"{{ .ProjectName }}/internal/model"
+	"{{ .ProjectName }}/internal/resource"
+)
+
+type {{ .Domain }}UseCase struct {
+	{{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository
+}
+
+func New{{ .Domain }}UseCase({{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository) *{{ .Domain }}UseCase {
+	return &{{ .Domain }}UseCase{
+		{{ .DomainLowerCase }}Repo: {{ .DomainLowerCase }}Repo,
+	}
+}
+
+func (u *{{ .Domain }}UseCase) Create(ctx context.Context, {{ .Domain }} *model.{{ .Domain }}) (*model.{{ .Domain }}, error) {
+	panic("implement me")
+}
+
+func (u *{{ .Domain }}UseCase) All(ctx context.Context) ([]resource.{{ .Domain }}DB, error) {
+	panic("implement me")
+}
+
+func (u *{{ .Domain }}UseCase) Read(ctx context.Context) (int64, error) {
+	panic("implement me")
+}
+
+func (u *{{ .Domain }}UseCase) Update(ctx context.Context) (*model.{{ .Domain }}, error) {
+	panic("implement me")
+}
+
+func (u *{{ .Domain }}UseCase) Delete(ctx context.Context) (*model.{{ .Domain }}, error) {
+	panic("implement me")
+}

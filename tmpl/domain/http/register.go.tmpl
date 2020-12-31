@@ -1,0 +1,17 @@
+package http
+
+import (
+	"github.com/go-chi/chi"
+
+	"{{ .ProjectName }}/internal/domain/{{ .DomainLowerCase }}"
+	"{{ .ProjectName }}/internal/middleware"
+)
+
+func RegisterHTTPEndPoints(router *chi.Mux, uc {{ .DomainLowerCase }}.UseCase) {
+	h := NewHandler(uc)
+
+	router.Route("/api/v1/{{ .DomainLowerCase }}s", func(router chi.Router) {
+		router.With(middleware.Paginate).Get("/", h.All)
+		router.Post("/", h.Create)
+	})
+}

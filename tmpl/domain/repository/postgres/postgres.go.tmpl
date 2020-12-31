@@ -1,0 +1,74 @@
+package postgres
+
+import (
+	"context"
+
+	"github.com/jmoiron/sqlx"
+
+	"{{ .ProjectName }}/internal/domain/{{ .DomainLowerCase }}"
+	"{{ .ProjectName }}/internal/model"
+	"{{ .ProjectName }}/internal/resource"
+)
+
+type repository struct {
+	db *sqlx.DB
+}
+
+func New{{ .Domain }}Repository(db *sqlx.DB) {{ .DomainLowerCase }}.Repository {
+	return &repository{db: db}
+}
+
+func (r *repository) All(ctx context.Context) ([]resource.{{ .Domain }}DB, error) {
+	panic("implement me")
+}
+
+func (r *repository) Read(ctx context.Context) (int64, error) {
+	panic("implement me")
+}
+
+func (r *repository) Update(ctx context.Context) (*model.{{ .Domain }}, error) {
+	panic("implement me")
+}
+
+func (r *repository) Delete(ctx context.Context) (*model.{{ .Domain }}, error) {
+	panic("implement me")
+}
+
+func (r *repository) Create(ctx context.Context, {{ .DomainLowerCase }} *model.{{ .Domain }}) (*model.{{ .Domain }}, error) {
+	panic("implement me")
+}
+
+// Close attaches the provider and close the connection
+func (r *repository) Close() {
+	r.db.Close()
+}
+
+// Up attaches the provider and create the table
+func (r *repository) Up() error {
+	ctx := context.Background()
+
+	query := "CREATE table {{ .DomainLowerCase }}s({{ .DomainLowerCase }}_id bigserial, title varchar(255) not null, published_date timestamp with time zone not null, image_url varchar(255), description text not null, created_at timestamp with time zone default current_timestamp, updated_at timestamp with time zone default current_timestamp, deleted_at timestamp with time zone, primary key ({{ .DomainLowerCase }}_id))"
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx)
+	return err
+}
+
+// Drop attaches the provider and drop the table
+func (r *repository) Drop() error {
+	ctx := context.Background()
+
+	query := "DROP TABLE IF EXISTS {{ .DomainLowerCase }}s cascade"
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx)
+	return err
+}
