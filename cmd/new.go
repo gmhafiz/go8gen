@@ -1,12 +1,11 @@
 package cmd
 
-//go:generate binclude
-
 import (
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -75,9 +74,19 @@ var newCmd = &cobra.Command{
 		}
 		projectName := args[0]
 
+		syscall.Umask(0)
+		err := os.Mkdir(projectName, os.ModePerm)
+		if err != nil {
+			log.Fatalf("error creating directory: %s", projectName)
+		}
+		err = os.Chdir(projectName)
+		if err != nil {
+			log.Fatalf("error going into directory: %s", projectName)
+		}
+
 		projectNamePath := fmt.Sprintf("cmd/%s", projectName)
 		directories = append(directories, projectNamePath)
-		err := createDirectories(directories, projectName)
+		err = createDirectories(directories, projectName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -301,16 +310,28 @@ parse bool) error {
 }
 
 func parseFile(file *os.File, tmplFileName string, vars struct{ ProjectName, Domain, DomainLowerCase string }) error {
-	tmpl, err := template.ParseFiles(tmplFileName)
+	tmplContent, err := BinFS.ReadFile(tmplFileName)
+	fileNameTail := filepath.Base(tmplFileName)
+	f, err := os.Create(filepath.Join("/tmp/", fileNameTail))
 	if err != nil {
-		return errors.Wrapf(err, "error parsing file: %s", tmplFileName)
+		log.Fatalf("error creating file at /tmp folder")
+	}
+	_, err = f.Write(tmplContent)
+	if err != nil {
+		log.Fatalf("error writing temporary file")
+	}
+
+	tmpl, err := template.ParseFiles(filepath.Join("/tmp", fileNameTail))
+
+	if err != nil {
+		return errors.Wrapf(err, "error parsing file: %s", fileNameTail)
 	}
 	return tmpl.Execute(file, vars)
 }
 
 func copyFile(fileName, tmplFileName string) error {
-	tmplContent, err := BinFS.ReadFile(tmplFileName)
-
+	filePath := filepath.Join(tmplPath, tmplFileName)
+	tmplContent, err := BinFS.ReadFile(filePath)
 	if err != nil {
 		return errors.Wrapf(err, "error reading file: %s", tmplFileName)
 	}
