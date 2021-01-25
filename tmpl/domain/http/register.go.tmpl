@@ -3,8 +3,8 @@ package http
 import (
 	"github.com/go-chi/chi"
 
-	"{{ .ProjectName }}/internal/domain/{{ .DomainLowerCase }}"
-	"{{ .ProjectName }}/internal/middleware"
+	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
+	"{{ .ModuleName }}/internal/middleware"
 )
 
 func RegisterHTTPEndPoints(router *chi.Mux, uc {{ .DomainLowerCase }}.UseCase) {

@@ -3,7 +3,7 @@ package http
 import (
 	"github.com/go-chi/chi"
 
-	"{{ .ProjectName }}/internal/domain/health"
+	"{{ .ModuleName }}/internal/domain/health"
 )
 
 func RegisterHTTPEndPoints(router *chi.Mux, uc health.UseCase) {

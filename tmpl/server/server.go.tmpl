@@ -11,14 +11,14 @@ import (
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
 
-	"{{ .ProjectName }}/configs"
-	"{{ .ProjectName }}/internal/domain/health"
-	healthHTTP "{{ .ProjectName }}/internal/domain/health/handler/http"
+	"{{ .ModuleName }}/configs"
+	"{{ .ModuleName }}/internal/domain/health"
+	healthHTTP "{{ .ModuleName }}/internal/domain/health/handler/http"
 	// inject:import
-	"{{ .ProjectName }}/internal/domain/health/repository/postgres"
-	"{{ .ProjectName }}/internal/domain/health/usecase"
-	"{{ .ProjectName }}/internal/middleware"
-	"{{ .ProjectName }}/third_party/database"
+	"{{ .ModuleName }}/internal/domain/health/repository/postgres"
+	"{{ .ModuleName }}/internal/domain/health/usecase"
+	"{{ .ModuleName }}/internal/middleware"
+	"{{ .ModuleName }}/third_party/database"
 )
 
 type App struct {

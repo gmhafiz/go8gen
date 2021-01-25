@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/friendsofgo/errors"
@@ -17,6 +18,7 @@ func init() {
 
 	directories = []string{}
 	files = []Structure{}
+	p = Project{}
 }
 
 var domainCmd = &cobra.Command{
@@ -27,12 +29,18 @@ var domainCmd = &cobra.Command{
 		if len(args) == 0 {
 			log.Fatal("must put a name for the domain. e.g. : go8 domain book")
 		}
-		domain := strings.ToLower(args[0])
 
-		projectName := getProjectName()
+		p := Project{}
+		p.Domain = strings.Title(args[0])
+		p.DomainLowerCase = strings.ToLower(args[0])
+		p.Name = getProjectName()
+		p.ModuleName = getModuleName()
+		if p.ModuleName == "" {
+			log.Fatal("error finding module name")
+		}
 
-		directories := createDirectoryNames(domain)
-		err := createDirectories(directories, domain)
+		directories := createDirectoryNames(p.DomainLowerCase)
+		err := createDirectories(directories)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -40,51 +48,51 @@ var domainCmd = &cobra.Command{
 		structures := []Structure{
 			{
 				TemplateFileName: "../tmpl/domain/repository.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/repository.go", domain),
+				FileName: fmt.Sprintf("internal/domain/%s/repository.go", p.DomainLowerCase),
 				Parse: true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/repository/postgres/postgres.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/repository/postgres/postgres.go", domain),
+				FileName: fmt.Sprintf("internal/domain/%s/repository/postgres/postgres.go", p.DomainLowerCase),
 				Parse: true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/usecase.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/usecase.go", domain),
+				FileName: fmt.Sprintf("internal/domain/%s/usecase.go", p.DomainLowerCase),
 				Parse: true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/usecase/usecase.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/usecase/usecase.go", domain),
+				FileName: fmt.Sprintf("internal/domain/%s/usecase/usecase.go", p.DomainLowerCase),
 				Parse: true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/http/handler.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/handler/http/handler.go", domain),
+				FileName: fmt.Sprintf("internal/domain/%s/handler/http/handler.go", p.DomainLowerCase),
 				Parse: true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/http/register.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/handler/http/register.go", domain),
+				FileName: fmt.Sprintf("internal/domain/%s/handler/http/register.go", p.DomainLowerCase),
 				Parse: true,
 			},
 			{
 				TemplateFileName: "../tmpl/model/model.go.tmpl",
-				FileName: fmt.Sprintf("internal/model/%s.go", domain),
+				FileName: fmt.Sprintf("internal/model/%s.go", p.DomainLowerCase),
 				Parse: true,
 			},
 			{
 				TemplateFileName: "../tmpl/resource/resource.go.tmpl",
-				FileName: fmt.Sprintf("internal/resource/%s.go", domain),
+				FileName: fmt.Sprintf("internal/resource/%s.go", p.DomainLowerCase),
 				Parse: true,
 			},
 		}
-		err = createFiles(projectName, domain, structures)
+		err = createFiles(p, structures)
 		if err != nil {
 			log.Fatalf(ErrorColor, err)
 		}
 
-		err = injectCode(projectName, domain)
+		err = injectCode(p)
 		if err != nil {
 			log.Fatalf(ErrorColor, err)
 		}
@@ -93,19 +101,19 @@ var domainCmd = &cobra.Command{
 	},
 }
 
-func injectCode(projectName, domain string) error {
+func injectCode(p Project) error {
 	const serverFileName = "internal/server/server.go"
 	const injectImport = "// inject:import"
 	const injectApp = "//inject:app"
 	const injectUseCase = "// inject:usecase"
 	const injectHandler = "// inject:handler"
-	Domain := strings.Title(domain)
-	importTmpl1 := fmt.Sprintf(`%sHTTP "%s/internal/domain/%s/handler/http"`, domain, projectName, domain)
-	importTmpl2 := fmt.Sprintf(`%sPostgres "%s/internal/domain/%s/repository/postgres"`, domain, projectName, domain)
-	importTmpl3 := fmt.Sprintf(`%sUseCase "%s/internal/domain/%s/usecase"`, domain, projectName, domain)
-	appTmpl := fmt.Sprintf(`%sUC *%sUseCase.%sUseCase`, domain, domain, Domain)
-	usecaseTmpl := fmt.Sprintf(`%sUC: %sUseCase.New%sUseCase(%sPostgres.New%sRepository(db)),`, domain, domain, Domain, domain, Domain)
-	handlerTmpl := fmt.Sprintf(`%sHTTP.RegisterHTTPEndPoints(router, a.%sUC)`, domain, domain)
+	p.Domain = strings.Title(p.DomainLowerCase)
+	importTmpl1 := fmt.Sprintf(`%sHTTP "%s/internal/domain/%s/handler/http"`, p.DomainLowerCase, p.Name, p.DomainLowerCase)
+	importTmpl2 := fmt.Sprintf(`%sPostgres "%s/internal/domain/%s/repository/postgres"`, p.DomainLowerCase, p.Name, p.DomainLowerCase)
+	importTmpl3 := fmt.Sprintf(`%sUseCase "%s/internal/domain/%s/usecase"`, p.DomainLowerCase, p.Name, p.DomainLowerCase)
+	appTmpl := fmt.Sprintf(`%sUC *%sUseCase.%sUseCase`, p.DomainLowerCase, p.DomainLowerCase, p.Domain)
+	usecaseTmpl := fmt.Sprintf(`%sUC: %sUseCase.New%sUseCase(%sPostgres.New%sRepository(db)),`, p.DomainLowerCase, p.DomainLowerCase, p.Domain, p.DomainLowerCase, p.Domain)
+	handlerTmpl := fmt.Sprintf(`%sHTTP.RegisterHTTPEndPoints(router, a.%sUC)`, p.DomainLowerCase, p.DomainLowerCase)
 
 	serverContent, err := ioutil.ReadFile(serverFileName)
 	if err != nil {
@@ -152,6 +160,27 @@ func getProjectName() string {
 		os.Exit(0)
 	}
 	return modfile.ModulePath(goModBytes)
+}
+
+func getModuleName() string {
+	currPath, err := os.Getwd()
+	if err != nil {
+		log.Fatal("error getting current path")
+	}
+	fileWithGoModule := "internal/domain/health/handler/http/handler.go"
+	file, err := ioutil.ReadFile(filepath.Join(currPath, fileWithGoModule))
+	if err != nil {
+		log.Fatalf("error finding the file with go modules name")
+	}
+	temp := strings.Split(string(file), "\n")
+	for _, line := range temp {
+		stripped := strings.Trim(line, "\t")
+		stripped = strings.Trim(stripped, "\n")
+		if strings.Contains(stripped, "internal/domain/health") {
+			return strings.Trim(strings.Split(stripped, "/")[0], "\"")
+		}
+	}
+	return ""
 }
 
 func createDirectoryNames(domain string) []string {

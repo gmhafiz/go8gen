@@ -22,7 +22,15 @@ var tmplPath = binclude.Include("../tmpl")
 var (
 	directories []string
 	files       []Structure
+	p           Project
 )
+
+type Project struct {
+	Name            string
+	ModuleName      string
+	Domain          string
+	DomainLowerCase string
+}
 
 type Structure struct {
 	TemplateFileName string
@@ -60,39 +68,54 @@ func init() {
 		"third_party/database",
 	}
 	files = []Structure{}
+
+	p = Project{}
 }
 
 var newCmd = &cobra.Command{
 	Use:   "new",
 	Short: "Generate a new starter",
 	Long:  ``,
+	Example: `1. go8 new <projectName>
+2. go8 new <projectName> <site.com/user/repoName> # optional`,
 	Run: func(cmd *cobra.Command, args []string) {
 		checkVersion()
 
 		if len(args) == 0 {
-			log.Fatal("must put a project name. e.g. : go8 new new_project")
+			log.Fatal("must put a name. Example:\ngo8 new new_project")
 		}
-		projectName := args[0]
+
+		p.Name = strings.ToLower(args[0])
+		if len(args) == 1 {
+			p.ModuleName = args[0]
+		} else if len(args) == 2 {
+			p.ModuleName = args[1]
+		}
+
+		if isDirectoryExists(p.Name) {
+			log.Fatalf("chosen directory name already exists: %s", p.Name)
+		}
 
 		syscall.Umask(0)
-		err := os.Mkdir(projectName, 0755)
+		err := os.Mkdir(p.Name, 0755)
 		if err != nil {
-			log.Fatalf("error creating directory: %s", projectName)
+			Fatal(errors.Wrap(err, "error creating directory: %s"), p.Name)
+
 		}
-		err = os.Chdir(projectName)
+		err = os.Chdir(p.Name)
 		if err != nil {
-			log.Fatalf("error going into directory: %s", projectName)
+			Fatal(errors.Wrap(err, "error going into directory: %s"), p.Name)
 		}
 
-		projectNamePath := fmt.Sprintf("cmd/%s", projectName)
+		projectNamePath := fmt.Sprintf("cmd/%s", p.Name)
 		directories = append(directories, projectNamePath)
-		err = createDirectories(directories, projectName)
+		err = createDirectories(directories)
 		if err != nil {
-			log.Fatal(err)
+			Fatal(err, p.Name)
 		}
-		err = initGoMod(projectName)
+		err = initGoMod(p.Name)
 		if err != nil {
-			log.Fatal(err)
+			Fatal(err)
 		}
 
 		structures := []Structure{
@@ -113,7 +136,7 @@ var newCmd = &cobra.Command{
 			},
 			{
 				TemplateFileName: "../tmpl/cmd/main.tmpl",
-				FileName:         fmt.Sprintf("cmd/%s/%s.go", projectName, projectName),
+				FileName:         fmt.Sprintf("cmd/%s/%s.go", p.Name, p.Name),
 				Parse:            true,
 			},
 			{
@@ -212,9 +235,9 @@ var newCmd = &cobra.Command{
 				Parse:            false,
 			},
 		}
-		err = createFiles(projectName, "", structures)
+		err = createFiles(p, structures)
 		if err != nil {
-			log.Fatal(err)
+			Fatal(err)
 		}
 
 		fmt.Printf(InfoColor, "...done.\n")
@@ -251,7 +274,23 @@ func parseVersion(version string) *Semver {
 	}
 }
 
-func createDirectories(directories []string, projectName string) error {
+func isDirectoryExists(projectName string) bool {
+	_, err := os.Stat(projectName)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func Fatal(msg error, args ...string) {
+	err := os.RemoveAll(p.Name)
+	if err != nil {
+		log.Printf("error removing diectory: %s", p.Name)
+	}
+	log.Fatalf(msg.Error(), args)
+}
+
+func createDirectories(directories []string) error {
 	for _, val := range directories {
 		syscall.Umask(0)
 		err := os.MkdirAll(val, 0755)
@@ -271,23 +310,13 @@ func initGoMod(projectName string) error {
 	return nil
 }
 
-func createFiles(projectName, domain string, structures []Structure) error {
-	vars := struct {
-		ProjectName     string
-		Domain          string
-		DomainLowerCase string
-	}{
-		ProjectName:     projectName,
-		Domain:          strings.Title(domain),
-		DomainLowerCase: domain,
-	}
-
+func createFiles(project Project, structures []Structure) error {
 	for _, val := range structures {
 		files = append(files, val)
 	}
 
 	for _, val := range files {
-		err := createFile(val.TemplateFileName, val.FileName, vars, val.Parse)
+		err := createFile(val.TemplateFileName, val.FileName, project, val.Parse)
 		if err != nil {
 			return err
 		}
@@ -295,8 +324,7 @@ func createFiles(projectName, domain string, structures []Structure) error {
 	return nil
 }
 
-func createFile(tmplFileName, fileName string, vars struct{ ProjectName, Domain, DomainLowerCase string },
-parse bool) error {
+func createFile(tmplFileName, fileName string, project Project, parse bool) error {
 	file, err := os.Create(fileName)
 	if err != nil {
 		return errors.Wrapf(err, "error creating file: %s", fileName)
@@ -305,20 +333,20 @@ parse bool) error {
 	if !parse {
 		return copyFile(fileName, tmplFileName)
 	} else {
-		return parseFile(file, tmplFileName, vars)
+		return parseFile(file, tmplFileName, project)
 	}
 }
 
-func parseFile(file *os.File, tmplFileName string, vars struct{ ProjectName, Domain, DomainLowerCase string }) error {
+func parseFile(file *os.File, tmplFileName string, project Project) error {
 	tmplContent, err := BinFS.ReadFile(tmplFileName)
 	fileNameTail := filepath.Base(tmplFileName)
 	f, err := os.Create(filepath.Join("/tmp/", fileNameTail))
 	if err != nil {
-		log.Fatalf("error creating file at /tmp folder")
+		return errors.Wrap(err, "error creating file at /tmp folder")
 	}
 	_, err = f.Write(tmplContent)
 	if err != nil {
-		log.Fatalf("error writing temporary file")
+		return errors.Wrap(err, "error writing temporary file")
 	}
 
 	tmpl, err := template.ParseFiles(filepath.Join("/tmp", fileNameTail))
@@ -326,7 +354,7 @@ func parseFile(file *os.File, tmplFileName string, vars struct{ ProjectName, Dom
 	if err != nil {
 		return errors.Wrapf(err, "error parsing file: %s", fileNameTail)
 	}
-	return tmpl.Execute(file, vars)
+	return tmpl.Execute(file, project)
 }
 
 func copyFile(fileName, tmplFileName string) error {

@@ -8,7 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
-	"{{ .ProjectName }}/configs"
+	"{{ .ModuleName }}/configs"
 )
 
 func New(cfg *configs.Configs) *sql.DB {
