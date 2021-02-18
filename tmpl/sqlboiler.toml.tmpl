@@ -4,11 +4,11 @@ no-tests = true
 debug    = false
 
 [psql]
-dbname = ""
-host   = "localhost"
-port   = 5432
-user   = ""
-pass   = ""
+host   = "{{ .Host }}"
+port   = {{ .Port }}
+dbname = "{{ .DBName }}"
+user   = "{{ .Username }}"
+pass   = "{{ .Password }}"
 sslmode = "disable"
 schema = "public"
 blacklist = ["migrations", "schema_migrations"]

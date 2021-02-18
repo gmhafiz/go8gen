@@ -8,12 +8,12 @@ import (
 	"{{ .ModuleName }}/internal/resource"
 )
 
-type {{ .Domain }}UseCase struct {
+type {{ .Domain}}UseCase struct {
 	{{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository
 }
 
-func New{{ .Domain }}UseCase({{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository) *{{ .Domain }}UseCase {
-	return &{{ .Domain }}UseCase{
+func New{{ .Domain}}UseCase({{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository) *{{ .Domain}}UseCase {
+	return &{{ .Domain}}UseCase{
 		{{ .DomainLowerCase }}Repo: {{ .DomainLowerCase }}Repo,
 	}
 }
@@ -36,4 +36,8 @@ func (u *{{ .Domain }}UseCase) Update(ctx context.Context) (*model.{{ .Domain }}
 
 func (u *{{ .Domain }}UseCase) Delete(ctx context.Context) (*model.{{ .Domain }}, error) {
 	panic("implement me")
+}
+
+func (u *{{ .Domain}}UseCase) Search(ctx context.Context, req *{{ .DomainLowerCase }}.Request) ([]*models.{{ .Domain}}, error) {
+	return u.{{ .DomainLowerCase }}Repo.Search(ctx, req)
 }

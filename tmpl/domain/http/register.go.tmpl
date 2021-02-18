@@ -3,15 +3,14 @@ package http
 import (
 	"github.com/go-chi/chi"
 
-	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
 	"{{ .ModuleName }}/internal/middleware"
 )
 
-func RegisterHTTPEndPoints(router *chi.Mux, uc {{ .DomainLowerCase }}.UseCase) {
-	h := NewHandler(uc)
+func RegisterHTTPEndPoints(router *chi.Mux) {
+	h := NewHandler()
 
-	router.Route("/api/v1/{{ .DomainLowerCase }}s", func(router chi.Router) {
-		router.With(middleware.Paginate).Get("/", h.All)
-		router.Post("/", h.Create)
+	router.Route("/api/v1/placeholder", func(router chi.Router) {
+		router.Use(middleware.Json)
+		router.Get("/", h.Placeholder)
 	})
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/gmhafiz/go8gen/internal/app"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,10 +16,6 @@ import (
 
 func init() {
 	rootCmd.AddCommand(domainCmd)
-
-	directories = []string{}
-	files = []Structure{}
-	p = Project{}
 }
 
 var domainCmd = &cobra.Command{
@@ -30,64 +27,69 @@ var domainCmd = &cobra.Command{
 			log.Fatal("must put a name for the domain. e.g. : go8 domain book")
 		}
 
-		p := Project{}
-		p.Domain = strings.Title(args[0])
-		p.DomainLowerCase = strings.ToLower(args[0])
-		p.Name = getProjectName()
-		p.ModuleName = getModuleName()
+		a := app.New()
+		p := app.Project{
+			Name:            getProjectName(),
+			ModuleName:      getModuleName(),
+			Domain:          strings.Title(args[0]),
+			DomainLowerCase: strings.ToLower(args[0]),
+		}
 		if p.ModuleName == "" {
 			log.Fatal("error finding module name")
 		}
+		a.SetProject(p)
 
 		directories := createDirectoryNames(p.DomainLowerCase)
-		err := createDirectories(directories)
+		err := a.CreateDirectories(directories)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		structures := []Structure{
+		structure := []app.Structure{
 			{
 				TemplateFileName: "../tmpl/domain/repository.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/repository.go", p.DomainLowerCase),
-				Parse: true,
+				FileName:         fmt.Sprintf("internal/domain/%s/repository.go", p.DomainLowerCase),
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/repository/postgres/postgres.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/repository/postgres/postgres.go", p.DomainLowerCase),
-				Parse: true,
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/postgres/postgres.go", p.DomainLowerCase),
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/usecase.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/usecase.go", p.DomainLowerCase),
-				Parse: true,
+				FileName:         fmt.Sprintf("internal/domain/%s/usecase.go", p.DomainLowerCase),
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/usecase/usecase.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/usecase/usecase.go", p.DomainLowerCase),
-				Parse: true,
+				FileName:         fmt.Sprintf("internal/domain/%s/usecase/usecase.go", p.DomainLowerCase),
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/http/handler.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/handler/http/handler.go", p.DomainLowerCase),
-				Parse: true,
+				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/handler.go", p.DomainLowerCase),
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/http/register.go.tmpl",
-				FileName: fmt.Sprintf("internal/domain/%s/handler/http/register.go", p.DomainLowerCase),
-				Parse: true,
+				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/register.go", p.DomainLowerCase),
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/model/model.go.tmpl",
-				FileName: fmt.Sprintf("internal/model/%s.go", p.DomainLowerCase),
-				Parse: true,
+				FileName:         fmt.Sprintf("internal/model/%s.go", p.DomainLowerCase),
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/resource/resource.go.tmpl",
-				FileName: fmt.Sprintf("internal/resource/%s.go", p.DomainLowerCase),
-				Parse: true,
+				FileName:         fmt.Sprintf("internal/resource/%s.go", p.DomainLowerCase),
+				Parse:            true,
 			},
 		}
-		err = createFiles(p, structures)
+		a.SetStructure(structure)
+
+		err = a.CreateFiles()
 		if err != nil {
 			log.Fatalf(ErrorColor, err)
 		}
@@ -101,23 +103,23 @@ var domainCmd = &cobra.Command{
 	},
 }
 
-func injectCode(p Project) error {
+func injectCode(p app.Project) error {
 	const serverFileName = "internal/server/server.go"
 	const injectImport = "// inject:import"
-	const injectApp = "//inject:app"
-	const injectUseCase = "// inject:usecase"
+	//const injectApp = "//inject:app"
+	//const injectUseCase = "// inject:usecase"
 	const injectHandler = "// inject:handler"
 	p.Domain = strings.Title(p.DomainLowerCase)
 	importTmpl1 := fmt.Sprintf(`%sHTTP "%s/internal/domain/%s/handler/http"`, p.DomainLowerCase, p.Name, p.DomainLowerCase)
-	importTmpl2 := fmt.Sprintf(`%sPostgres "%s/internal/domain/%s/repository/postgres"`, p.DomainLowerCase, p.Name, p.DomainLowerCase)
-	importTmpl3 := fmt.Sprintf(`%sUseCase "%s/internal/domain/%s/usecase"`, p.DomainLowerCase, p.Name, p.DomainLowerCase)
-	appTmpl := fmt.Sprintf(`%sUC *%sUseCase.%sUseCase`, p.DomainLowerCase, p.DomainLowerCase, p.Domain)
-	usecaseTmpl := fmt.Sprintf(`%sUC: %sUseCase.New%sUseCase(%sPostgres.New%sRepository(db)),`, p.DomainLowerCase, p.DomainLowerCase, p.Domain, p.DomainLowerCase, p.Domain)
+	//importTmpl2 := fmt.Sprintf(`%sPostgres "%s/internal/domain/%s/repository/postgres"`, p.DomainLowerCase, p.Name, p.DomainLowerCase)
+	//importTmpl3 := fmt.Sprintf(`%sUseCase "%s/internal/domain/%s/usecase"`, p.DomainLowerCase, p.Name, p.DomainLowerCase)
+	//appTmpl := fmt.Sprintf(`%sUC *%sUseCase.%sUseCase`, p.DomainLowerCase, p.DomainLowerCase, p.Domain)
+	//usecaseTmpl := fmt.Sprintf(`%sUC: %sUseCase.New%sUseCase(%sPostgres.New%sRepository(db)),`, p.DomainLowerCase, p.DomainLowerCase, p.Domain, p.DomainLowerCase, p.Domain)
 	handlerTmpl := fmt.Sprintf(`%sHTTP.RegisterHTTPEndPoints(router, a.%sUC)`, p.DomainLowerCase, p.DomainLowerCase)
 
 	serverContent, err := ioutil.ReadFile(serverFileName)
 	if err != nil {
-		return errors.Wrapf(err, "error reading file: ", serverFileName)
+		return errors.Wrapf(err, "error reading file: %s", serverFileName)
 	}
 
 	var newFile []string
@@ -128,15 +130,15 @@ func injectCode(p Project) error {
 		stripped = strings.Trim(stripped, "\n")
 		if stripped == injectImport {
 			newFile = append(newFile, importTmpl1)
-			newFile = append(newFile, importTmpl2)
-			newFile = append(newFile, importTmpl3)
+			//newFile = append(newFile, importTmpl2)
+			//newFile = append(newFile, importTmpl3)
 		}
-		if stripped == injectApp {
-			newFile = append(newFile, appTmpl)
-		}
-		if stripped == injectUseCase {
-			newFile = append(newFile, usecaseTmpl)
-		}
+		//if stripped == injectApp {
+		//	newFile = append(newFile, appTmpl)
+		//}
+		//if stripped == injectUseCase {
+		//	newFile = append(newFile, usecaseTmpl)
+		//}
 		if stripped == injectHandler {
 			newFile = append(newFile, handlerTmpl)
 		}

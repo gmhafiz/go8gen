@@ -19,7 +19,7 @@ const (
 var rootCmd = &cobra.Command{
 	Use:   "go8",
 	Short: "go8 is a golang API scaffolder",
-	Long: `Quickly scaffold a new Go API site - https://github.com/gmhafiz/go8`,
+	Long:  `Quickly scaffold a new Go API site - https://github.com/gmhafiz/go8`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
 	},

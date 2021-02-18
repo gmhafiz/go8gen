@@ -15,7 +15,7 @@ type Configs struct {
 
 func New() *Configs {
     err := godotenv.Load()
-        if err != nil {
+    if err != nil {
         log.Fatal(err)
     }
 
@@ -24,7 +24,7 @@ func New() *Configs {
     cache := NewCache()
     es := ElasticSearch()
 
-    return &Configs {
+    return &Configs{
         Api:           api,
         Database:      dataStore,
         Cache:         cache,

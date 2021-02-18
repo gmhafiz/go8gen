@@ -1,0 +1,29 @@
+package main
+
+import (
+	"log"
+
+	"{{ .ModuleName }}/internal/server"
+)
+
+const Version = "v0.6.0"
+
+// @title Go8
+// @version 0.6.0
+// @description Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.
+
+// @contact.name <name>
+// @contact.url <url>
+// @contact.email <email>
+
+// @host localhost:3080
+// @BasePath /
+func main() {
+	s := server.New(Version)
+	s.Init()
+	s.StartSwagger()
+
+	if err := s.Run(); err != nil {
+		log.Fatalf("%s", err.Error())
+	}
+}

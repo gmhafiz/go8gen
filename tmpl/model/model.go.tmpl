@@ -8,14 +8,14 @@ import (
 
 // {{ .Domain }} is an object representing the database table.
 type {{ .Domain }} struct {
-	{{ .Domain }}ID        int64       `boil:"{{ .DomainLowerCase }}_id" json:"{{ .DomainLowerCase }}_id" toml:"{{ .DomainLowerCase }}_id" yaml:"{{ .DomainLowerCase }}_id"`
-	Title         string      `boil:"title" json:"title" toml:"title" yaml:"title"`
-	PublishedDate time.Time   `boil:"published_date" json:"published_date" toml:"published_date" yaml:"published_date"`
-	ImageURL      null.String `boil:"image_url" json:"image_url,omitempty" toml:"image_url" yaml:"image_url,omitempty"`
-	Description   null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	CreatedAt     null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt     null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	DeletedAt     null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	{{ .Domain }}ID        int64       `db:"book_id" boil:"{{ .DomainLowerCase }}_id" json:"{{ .DomainLowerCase }}_id" toml:"{{ .DomainLowerCase }}_id" yaml:"{{ .DomainLowerCase }}_id"`
+	Title         string      `db:"title" boil:"title" json:"title" toml:"title" yaml:"title"`
+	PublishedDate time.Time   `db:"published_date" boil:"published_date" json:"published_date" toml:"published_date" yaml:"published_date"`
+	ImageURL      null.String `db:"image_url" boil:"image_url" json:"image_url,omitempty" toml:"image_url" yaml:"image_url,omitempty"`
+	Description   null.String `db:"description" boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	CreatedAt     null.Time   `db:"created_at" boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt     null.Time   `db:"updated_at" boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	DeletedAt     null.Time   `db:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 }
 
 var {{ .Domain }}Columns = struct {

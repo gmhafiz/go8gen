@@ -7,7 +7,7 @@ type Health struct {
 }
 
 func NewHealthUseCase(health health.Repository) *Health {
-	return &Health {
+	return &Health{
 		healthRepo: health,
 	}
 }

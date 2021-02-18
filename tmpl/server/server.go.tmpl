@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,56 +11,101 @@ import (
 
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jmoiron/sqlx"
 
 	"{{ .ModuleName }}/configs"
-	"{{ .ModuleName }}/internal/domain/health"
-	healthHTTP "{{ .ModuleName }}/internal/domain/health/handler/http"
 	// inject:import
-	"{{ .ModuleName }}/internal/domain/health/repository/postgres"
-	"{{ .ModuleName }}/internal/domain/health/usecase"
+	healthHandler "{{ .ModuleName }}/internal/domain/health/handler/http"
+	healthRepo "{{ .ModuleName }}/internal/domain/health/repository/postgres"
+	healthUseCase "{{ .ModuleName }}/internal/domain/health/usecase"
 	"{{ .ModuleName }}/internal/middleware"
 	"{{ .ModuleName }}/third_party/database"
 )
 
-type App struct {
+type Server struct {
+	cfg        *configs.Configs
+	db         *sqlx.DB
+	router     *chi.Mux
 	httpServer *http.Server
-	healthUC health.UseCase
-	//inject:app
 }
 
-func NewApp(cfg *configs.Configs) *App {
-	db := database.NewSqlx(cfg)
+func New(version string) *Server {
+	log.Printf("staring API version: %s\n", version)
+	return &Server{}
+}
 
-	return &App{
-		healthUC: usecase.NewHealthUseCase(postgres.NewHealthRepository(db)),
-		// inject:usecase
+func (s *Server) Init() {
+	s.newConfig()
+	s.newDatabase()
+	s.newRouter()
+	s.initDomains()
+}
+
+func (s *Server) StartSwagger() {
+	if s.cfg.Api.RunSwagger {
+		swaggerServer(s.router)
 	}
 }
 
-func (a *App) Run(cfg *configs.Configs, version string) error {
-	router := chi.NewRouter()
-	router.Use(middleware.Cors)
-	router.Use(chiMiddleware.Logger)
-	router.Use(chiMiddleware.Recoverer)
+func (s *Server) newConfig() {
+	s.cfg = configs.New()
+}
 
-	healthHTTP.RegisterHTTPEndPoints(router, a.healthUC)
-	// inject:handler
+func (s *Server) newDatabase() {
+	if s.cfg.Database.Driver == "" {
+		log.Fatal("please fill in database credentials in .env file")
+	}
+	s.db = database.NewSqlx(s.cfg)
+	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnPool)
+}
 
-	a.httpServer = &http.Server{
-		Addr:           ":" + cfg.Api.Port,
-		Handler:        router,
-		ReadTimeout:    cfg.Api.ReadTimeout * time.Second,
-		WriteTimeout:   cfg.Api.WriteTimeout * time.Second,
+func (s *Server) newRouter() {
+	s.router = chi.NewRouter()
+	s.router.Use(middleware.Cors)
+	if s.cfg.Api.RequestLog {
+		s.router.Use(chiMiddleware.Logger)
+	}
+	s.router.Use(chiMiddleware.Recoverer)
+}
+
+func (s *Server) initDomains() {
+	s.initHealth()
+}
+
+func (s *Server) initHealth() {
+	newHealthRepo := healthRepo.NewHealthRepository(s.db)
+	newHealthUseCase := healthUseCase.NewHealthUseCase(newHealthRepo)
+	healthHandler.RegisterHTTPEndPoints(s.router, newHealthUseCase)
+}
+
+func (s *Server) Run() error {
+	s.httpServer = &http.Server{
+		Addr:           ":" + s.cfg.Api.Port,
+		Handler:        s.router,
+		ReadTimeout:    s.cfg.Api.ReadTimeout * time.Second,
+		WriteTimeout:   s.cfg.Api.WriteTimeout * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
+	fmt.Println(`            .,*/(#####(/*,.                               .,*((###(/*.
+        .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.
+      ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.
+     .(#%%%#/.                    .*(#%%%%%%%##/,.     ,(%%%#*    ,(%%%#*.
+    .*#%%%#/.    ..........     .*#%%%%#(/((#%%%%(,     ,/#%%%#(/#%%%#(,
+    ./#%%%(*    ,#%%%%%%%%(*   .*#%%%#*     .*#%%%#,      *(%%%%%%%#(,.
+    ./#%%%#*    ,(((##%%%%(*   ,/%%%%/.      .(%%%#/   .*#%%%#(*/(#%%%#/,
+     ,#%%%#(.        ,#%%%(*   ,/%%%%/.      .(%%%#/  ,/%%%#/.    .*#%%%(,
+      *#%%%%(*.      ,#%%%(*   .*#%%%#*     ./#%%%#,  ,(%%%#*      .(%%%#*
+       ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.
+         .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
+              .........                ......                .......`)
 	go func() {
-		log.Printf("API version: %s\n", version)
-		log.Printf("serving at %s:%s\n", cfg.Api.Host, cfg.Api.Port)
-		printAllRegisteredRoutes(router)
-		err := a.httpServer.ListenAndServe()
+		log.Printf("serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
+		printAllRegisteredRoutes(s.router)
+		err := s.httpServer.ListenAndServe()
 		if err != nil {
-			log.Fatalf("failed to listen and serve: %+v", err)
+			log.Fatal(err)
 		}
 	}()
 
@@ -68,10 +114,27 @@ func (a *App) Run(cfg *configs.Configs, version string) error {
 
 	<-quit
 
-	ctx, shutdown := context.WithTimeout(context.Background(), cfg.Api.IdleTimeout*time.Second)
+	ctx, shutdown := context.WithTimeout(context.Background(), s.cfg.Api.IdleTimeout*time.Second)
 	defer shutdown()
 
-	return a.httpServer.Shutdown(ctx)
+	return s.httpServer.Shutdown(ctx)
+}
+
+func (s *Server) GetConfig() *configs.Configs {
+	return s.cfg
+}
+
+func swaggerServer(router *chi.Mux) {
+	root := "./docs"
+	fs := http.FileServer(http.Dir(root))
+
+	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		if _, err := os.Stat(root + r.RequestURI); os.IsNotExist(err) {
+			http.StripPrefix(r.RequestURI, fs).ServeHTTP(w, r)
+		} else {
+			fs.ServeHTTP(w, r)
+		}
+	})
 }
 
 func printAllRegisteredRoutes(router *chi.Mux) {
