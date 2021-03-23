@@ -1,0 +1,53 @@
+package usecase
+
+import (
+	"context"
+
+	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
+	"{{ .ModuleName }}/internal/models"
+
+)
+
+type {{ .Domain}}UseCase struct {
+	{{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository
+}
+
+func New({{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository) *{{ .Domain }}UseCase {
+	return &{{ .Domain }}UseCase{
+		{{ .DomainLowerCase }}Repo: {{ .DomainLowerCase }}Repo,
+	}
+}
+
+func (u *{{ .Domain }}UseCase) Create(ctx context.Context, r {{ .DomainLowerCase }}.Request) (*models.{{ .Domain }}, error) {
+	bk := {{ .DomainLowerCase }}.To{{ .Domain }}(&r)
+	{{ .DomainLowerCase }}ID, err := u.{{ .DomainLowerCase }}Repo.Create(ctx, bk)
+	if err != nil {
+		return nil, err
+	}
+	{{ .DomainLowerCase }}Found, err := u.{{ .DomainLowerCase }}Repo.Read(context.Background(), {{
+.DomainLowerCase }}ID)
+	if err != nil {
+		return nil, err
+	}
+	return {{ .DomainLowerCase }}Found, err
+}
+
+func (u *{{ .Domain }}UseCase) All(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{ .Domain }}, error) {
+	return u.{{ .DomainLowerCase }}Repo.All(ctx, f)
+}
+
+func (u *{{ .Domain }}UseCase) Read(ctx context.Context, {{ .DomainLowerCase }}ID int64) (*models.{{.Domain }}, error) {
+	return u.{{ .DomainLowerCase }}Repo.Read(ctx, {{ .DomainLowerCase }}ID)
+}
+
+func (u *{{ .Domain }}UseCase) Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error) {
+	err := u.{{ .DomainLowerCase }}Repo.Update(ctx, {{ .DomainLowerCase }})
+	if err != nil {
+		return nil, err
+	}
+	return u.{{ .DomainLowerCase }}Repo.Read(ctx, {{ .DomainLowerCase }}.{{ .Domain }}ID)
+}
+
+func (u *{{ .Domain }}UseCase) Delete(ctx context.Context, {{ .DomainLowerCase }}ID int64) error {
+	return u.{{ .DomainLowerCase }}Repo.Delete(ctx, {{ .DomainLowerCase }}ID)
+}

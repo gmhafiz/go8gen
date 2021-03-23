@@ -1,14 +1,8 @@
 version: '3'
 
 tasks:
-  binclude:
-    desc: Generate embed files
-    dir: internal/app
-    cmds:
-      - binclude
-
   install:
     desc: Build and install
     cmds:
-      - go build -i -o go8gen main.go
-      - mv go8gen ~/go/bin/go8gen
+      - go build -i -o go8 main.go
+      - mv go8 ~/go/bin/go8

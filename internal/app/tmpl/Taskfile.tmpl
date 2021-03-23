@@ -1,0 +1,203 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  list:
+    desc: Lists available commands
+    cmds:
+      - task -l
+
+  migrate-create:
+    desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME=name_of_file'
+    cmds:
+      - migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
+
+  migrate:
+    desc: Migrates UP the database
+    cmds:
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up
+
+  migrate-step:
+    desc: Migrates UP the database
+    cmds:
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up "{{.n}}"
+
+  migrate-rollback:
+    desc: Rollback the database by 'n' step(s)
+    cmds:
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down "{{.n}}"
+
+  gen-orm:
+    desc: Reads your current database schema and creates models as well as orm.
+    cmds:
+      - sqlboiler --wipe --add-soft-deletes -t db psql
+
+  run:
+    desc: Runs the app
+    cmds:
+      - go run cmd/go8/main.go
+
+  check:
+    desc: Checks integrity of program
+    cmds:
+      - task tidy
+      - task vet
+      - task golint
+      - task security
+      - task fmt
+      - task test
+
+  build:
+    desc: Creates a compiled binary and copy configuration files
+    cmds:
+      - task: check
+      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -v -i -o go8 cmd/go8/main.go
+      - mkdir -p bin
+      - mv go8 bin/
+      - cp .env bin
+
+  tidy:
+    desc: Downloads dependencies and removes unused ones
+    cmds:
+      - go mod tidy
+
+  vet:
+    desc: Vets code
+    cmds:
+      - go vet ./...
+
+  golint:
+    desc: Uses golangci-lint
+    cmds:
+      - golangci-lint run
+
+  security:
+    desc: Run golang security
+    cmds:
+      - gosec -quiet ./...
+
+  fmt:
+    desc: Lint code
+    cmds:
+      - go fmt ./...
+
+  test:
+    desc: Test all cQode
+    cmds:
+      - go test ./...
+      - task: stop-dockertest
+
+  coverage:
+    desc: Peform test coverage
+    cmds:
+      - go test -cover ./...
+
+  generate:
+    desc: Runs all //go:generate commands embedded in .go files
+    cmds:
+      - go generate ./...
+
+  race:
+    desc: Check race condition
+    cmds:
+      - go test -race ./...
+
+  swagger:
+    desc: Generates Swagger page for API reference
+    cmds:
+      - swag init -g cmd/go8/main.go
+
+  docker-build:
+    desc: Builds a Docker image a server container
+    cmds:
+      - docker build -t go8/server -f Dockerfile .
+
+  docker-run:
+    desc: Runs the app Docker image as a Docker container
+    cmds:
+      - docker run -p 3080:3080 --rm -it --net=host --name go8container go8/server
+
+  docker-compose-start:
+    desc: Runs server and database using docker-compose
+    cmds:
+      - docker-compose -f docker-compose.yml up --build --abort-on-container-exit
+
+  docker-compose-stop:
+    desc: Stops server and database using docker-compose
+    cmds:
+      - docker-compose -f docker-compose.yml down --volumes
+
+  dockertest:
+    desc: Run e2e test
+    dir: docker-test
+    cmds:
+      - task: dockertest-stop
+      - docker-compose build
+      - docker-compose up -d
+      - docker exec -t go8_container_test "/home/appuser/app/e2e"
+      - task: dockertest-stop
+
+  dockertest-stop:
+    desc: stop docker e2e test
+    dir: docker-test
+    cmds:
+      - docker-compose down -v
+
+  stop-dockertest:
+    desc: Stop hanging dockertest container
+    cmds:
+      - scripts/stopDockertestByPort.sh 5434
+
+  install-tools:
+    desc: Install all optional cli tools
+    cmds:
+      - task: install-golangci
+      - task: install-swagger
+      - task: install-testify
+      - task: install-gomock
+      - task: install-golangmigrate
+      - task: install-sqlboiler
+      - task: install-gosec
+
+  install-sqlboiler:
+    desc: Install sqlboiler orm
+    cmds:
+      - GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
+      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
+      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql
+      - GO111MODULE=off go get github.com/volatiletech/sqlboiler-sqlite3
+      - GO111MODULE=off go get github.com/glerchundi/sqlboiler-crdb
+
+  install-golangci:
+    desc: Install golangci linter
+    cmds:
+      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+
+  install-swagger:
+    desc: Install swagger cli
+    cmds:
+      - go get github.com/swaggo/swag/cmd/swag
+
+  install-testify:
+    desc: Install testify testing suite
+    cmds:
+      - go get github.com/stretchr/testify
+
+  install-gomock:
+    desc: Install gomock test framework
+    cmds:
+      - GO111MODULE=on go get github.com/golang/mock/mockgen@v1.4.4
+
+  install-golangmigrate:
+    desc: Install golang migration tool
+    cmds:
+      - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+      - mkdir -p ~/.local/bin
+      - mv migrate.linux-amd64 ~/.local/bin/migrate
+
+  install-gosec:
+    desc: Install golang security check. https://github.com/securego/gosec
+    cmds:
+      - go get github.com/securego/gosec/v2/cmd/gosec

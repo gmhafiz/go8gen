@@ -18,15 +18,7 @@ func (a *App) inputModuleName() {
 		return
 	}
 
-	prompt := promptui.Prompt{
-		Label: "(optional) Type in URL without https://. Leave empty to use project name",
-	}
-
-	input, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
+	input := prompt(fmt.Sprintf("(optional) Set Project URL without https:// or leave empty to use project name (%s)", a.Project.Name))
 	if input == "" {
 		a.Project.ModuleName = a.Project.Name
 		return
@@ -35,83 +27,43 @@ func (a *App) inputModuleName() {
 }
 
 func (a *App) inputDBInformation() {
+	proceed := a.willInputDBInformation()
+	if !proceed {
+		return
+	}
+
 	a.inputDBType()
 	a.inputDriver()
 
-	prompt := promptui.Prompt{
-		Label: "Type in database address (default: 0.0.0.0)",
-	}
-	input, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
+	input := prompt("Type in database address (default: 0.0.0.0)")
 	if input == "" {
 		a.Project.Host = "0.0.0.0"
 	} else {
 		a.Project.Host = input
 	}
 
-	prompt = promptui.Prompt{
-		Label: "Type in database name",
-	}
-	input, err = prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
-	a.Project.DBName = input
+	a.Project.DBName = prompt("Type in database name")
+	a.Project.Username = prompt("Type in database username")
+	a.Project.Password = prompt("Type in database password")
+	a.Project.SSLMode = promptSelect("Enable SSL Mode? (disable)", []string{"disable", "enable"})
+}
 
-	prompt = promptui.Prompt{
-		Label: "Type in database username",
+func (a *App) willInputDBInformation() bool {
+	result := promptSelect("Set Database Credentials?", []string{"no", "yes"})
+	if result == "no" {
+		fmt.Println("Remember to fill in .env file if you going to use a database!")
+		return false
+	} else {
+		return true
 	}
-	input, err = prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
-	a.Project.Username = input
-
-	prompt = promptui.Prompt{
-		Label: "Type in database password",
-	}
-	input, err = prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
-	a.Project.Password = input
-
-	promptSelect := promptui.Select{
-		Label: "Enable SSL Mode? (disable)",
-		Items: []string{"disable", "enable"},
-	}
-	_, result, err := promptSelect.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
-	if result == "" {
-		a.Project.SSLMode = "disable"
-	}
-	a.Project.SSLMode = result
 }
 
 func (a *App) inputDBType() {
-	prompt := promptui.Select{
-		Label: "Select Database type (postgres",
-		Items: []string{"postgres", "mariadb"},
-	}
-	_, result, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
-
-	if result == "" || result == "postgres"{
+	result := promptSelect("Select Database type (postgres)", []string{"postgres", "mysql"})
+	if result == "postgres" {
 		a.Project.Type = "postgres"
 		a.Project.Port = 5432
-	} else {
+	} else if result == "mysql" {
 		a.Project.Type = result
 		a.Project.Port = 3306
 	}
@@ -120,43 +72,22 @@ func (a *App) inputDBType() {
 func (a *App) inputDriver() {
 	var defaultDriver string
 	var driverOptions []string
-	if a.Project.Type == "postgres" {
+
+	switch a.Project.Type {
+	case "postgres":
 		defaultDriver = "sqlx/pq"
-		driverOptions = []string{"sqlx/pq", "sqlboiler"}
-		//driverOptions = []string{"sqlx/pq", "sqlboiler", "pgx"}
-	} else {
+		driverOptions = []string{"sqlx", "sqlboiler"}
+	case "mysql":
 		defaultDriver = "sqlx"
 		driverOptions = []string{"sqlx", "database/sql"}
 		//driverOptions = []string{"sqlx", "go-sql-driver/mysql", "database/sql"}
 	}
 
-	prompt := promptui.Select{
-		Label: fmt.Sprintf("Select Database driver, (%s)", defaultDriver),
-		Items: driverOptions,
-	}
-
-	_, result, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
-
-	a.Project.Driver = result
+	a.Project.Driver = promptSelect(fmt.Sprintf("Select Database driver, (%s)", defaultDriver), driverOptions)
 }
 
 func (a *App) scaffoldAuthentication() {
-	prompt := promptui.Select{
-		Label: "Scaffold authentication (no)",
-		Items: []string{"no", "yes"},
-	}
-
-	_, result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
-
+	result := promptSelect("Scaffold authentication", []string{"no", "yes"})
 	if result == "no" {
 		a.Project.ScaffoldAuthentication = false
 	}
@@ -165,6 +96,7 @@ func (a *App) scaffoldAuthentication() {
 
 func (a *App) printChoices() {
 	fmt.Println("\nYou chose")
+	fmt.Println("\n---------")
 	fmt.Printf("Module Name            : %s\n", a.Project.ModuleName)
 	fmt.Printf("Database Name          : %s\n", a.Project.DBName)
 	fmt.Printf("Database Type          : %s\n", a.Project.Type)
@@ -173,4 +105,29 @@ func (a *App) printChoices() {
 	fmt.Printf("Database Password      : %s\n", a.Project.Password)
 	fmt.Printf("Database SSL Mode      : %s\n", a.Project.SSLMode)
 	fmt.Printf("Scaffold Authentication: %t\n", a.Project.ScaffoldAuthentication)
+}
+
+func prompt(message string) string {
+	prompt := promptui.Prompt{
+		Label: message,
+	}
+	input, err := prompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return ""
+	}
+	return input
+}
+
+func promptSelect(message string, options []string) string {
+	promptSelect := promptui.Select{
+		Label: message,
+		Items: options,
+	}
+	_, result, err := promptSelect.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return ""
+	}
+	return result
 }

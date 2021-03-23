@@ -1,11 +1,10 @@
 module github.com/gmhafiz/go8gen
 
-go 1.13
+go 1.16
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/friendsofgo/errors v0.9.2
-	github.com/lu4p/binclude v0.0.0-20201219025532-e943140c1a3f
 	github.com/manifoldco/promptui v0.8.0
 	github.com/rogpeppe/go-internal v1.6.2
 	github.com/spf13/cobra v1.1.1

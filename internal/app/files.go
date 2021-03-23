@@ -11,6 +11,11 @@ import (
 	"github.com/friendsofgo/errors"
 )
 
+const (
+	tmplPath = "tmpl"
+	tmpPath  = "/tmp"
+)
+
 func (a *App) CreateDirectories(directories []string) error {
 	for _, val := range directories {
 		syscall.Umask(0)
@@ -71,13 +76,12 @@ func (a *App) CreateFile(tmplFileName, fileName string, parse bool) error {
 }
 
 func (a *App) ParseFile(file *os.File, tmplFileName string) error {
-	filePath := filepath.Join(a.TemplatePath, tmplFileName)
-	tmplContent, err := BinFS.ReadFile(filePath)
+	tmplContent, err := a.Static.ReadFile(filepath.Join(tmplPath, tmplFileName))
 	if err != nil {
 		return errors.Wrap(err, "error reading template file")
 	}
 	fileNameTail := filepath.Base(tmplFileName)
-	f, err := os.Create(filepath.Join("/tmp/", fileNameTail))
+	f, err := os.Create(filepath.Join(tmpPath, fileNameTail))
 	if err != nil {
 		return errors.Wrap(err, "error creating file at /tmp folder")
 	}
@@ -86,7 +90,7 @@ func (a *App) ParseFile(file *os.File, tmplFileName string) error {
 		return errors.Wrap(err, "error writing temporary file")
 	}
 
-	tmpl, err := template.ParseFiles(filepath.Join("/tmp", fileNameTail))
+	tmpl, err := template.ParseFiles(filepath.Join(tmpPath, fileNameTail))
 	if err != nil {
 		return errors.Wrapf(err, "error parsing file: %s", fileNameTail)
 	}
@@ -94,8 +98,7 @@ func (a *App) ParseFile(file *os.File, tmplFileName string) error {
 }
 
 func (a *App) CopyFile(fileName, tmplFileName string) error {
-	filePath := filepath.Join(a.TemplatePath, tmplFileName)
-	tmplContent, err := BinFS.ReadFile(filePath)
+	tmplContent, err := a.Static.ReadFile(filepath.Join(tmplPath, tmplFileName))
 	if err != nil {
 		return errors.Wrapf(err, "error reading file: %s", tmplFileName)
 	}

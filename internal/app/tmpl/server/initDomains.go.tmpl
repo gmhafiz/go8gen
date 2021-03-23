@@ -1,0 +1,17 @@
+package server
+
+import (
+    healthHandler "{{ .ModuleName }}/internal/domain/health/handler/http"
+    healthRepo "{{ .ModuleName }}/internal/domain/health/repository/postgres"
+    healthUseCase "{{ .ModuleName }}/internal/domain/health/usecase"
+)
+
+func (s *Server) initDomains() {
+    s.initHealth()
+}
+
+func (s *Server) initHealth() {
+    newHealthRepo := healthRepo.New(s.GetDB())
+    newHealthUseCase := healthUseCase.New(newHealthRepo)
+    healthHandler.RegisterHTTPEndPoints(s.router, newHealthUseCase)
+}

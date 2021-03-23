@@ -1,0 +1,49 @@
+package http
+
+import (
+	"net/http"
+
+	"github.com/go-playground/validator/v10"
+
+	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
+)
+
+type HTTP interface {
+	Create(w http.ResponseWriter, r *http.Request)
+	All(w http.ResponseWriter, r *http.Request)
+	Read(w http.ResponseWriter, r *http.Request)
+	Update(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request)
+}
+
+type Handler struct {
+	useCase  {{ .DomainLowerCase }}.UseCase
+	validate *validator.Validate
+}
+
+func NewHandler(useCase {{ .DomainLowerCase }}.UseCase) *Handler {
+	return &Handler{
+		useCase:  useCase,
+		validate: validator.New(),
+	}
+}
+
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
+	panic("implement me")
+}
+
+func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
+	panic("implement me")
+}
+
+func (h *Handler) Read(w http.ResponseWriter, r *http.Request) {
+	panic("implement me")
+}
+
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+	panic("implement me")
+}
+
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+	panic("implement me")
+}

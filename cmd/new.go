@@ -39,10 +39,16 @@ var newCmd = &cobra.Command{
 			a.Project.ModuleName = args[1]
 		}
 
+		if a.IsDirectoryExists(a.Project.Name) {
+			log.Fatalf("chosen directory name already exists: %s", a.Project.Name)
+		}
+
 		a.Prompt()
 
 		directories := []string{
 			"cmd",
+			"cmd/migrate",
+			"cmd/migrate/migrate",
 			"configs",
 			"database",
 			"database/migrations",
@@ -54,10 +60,11 @@ var newCmd = &cobra.Command{
 			"internal/domain/health/repository/postgres",
 			"internal/domain/health/usecase",
 			"internal/middleware",
-			"internal/model",
+			"internal/models",
 			"internal/server",
 			"internal/utility",
 			"internal/utility/database",
+			"internal/utility/filter",
 			"internal/utility/respond",
 			"scripts",
 			"third_party",
@@ -66,156 +73,182 @@ var newCmd = &cobra.Command{
 		structure := []app.Structure{
 			{
 				TemplateFileName: ".env.tmpl",
-				FileName:         fmt.Sprint(".env"),
+				FileName:         ".env",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: ".gitignore.tmpl",
-				FileName:         fmt.Sprint(".gitignore"),
+				FileName:         ".gitignore",
 				Parse:            false,
 			},
 			{
 				TemplateFileName: "Taskfile.tmpl",
-				FileName:         fmt.Sprint("Taskfile.yml"),
+				FileName:         "Taskfile.yml",
 				Parse:            false,
 			},
 			{
-				TemplateFileName: "cmd/main.go.tmpl",
+				TemplateFileName: "cmd/migrate/main.go.tmpl",
+				FileName:         "cmd/migrate/main.go",
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "cmd/migrate/migrate/migrate.go.tmpl",
+				FileName:         "cmd/migrate/migrate/migrate.go",
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "cmd/go8/main.go.tmpl",
 				FileName:         fmt.Sprintf("cmd/%s/main.go", a.Project.Name),
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "configs/api.go.tmpl",
-				FileName:         fmt.Sprint("configs/api.go"),
+				FileName:         "configs/api.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "configs/cache.go.tmpl",
-				FileName:         fmt.Sprint("configs/cache.go"),
+				FileName:         "configs/cache.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "configs/configs.go.tmpl",
-				FileName:         fmt.Sprint("configs/configs.go"),
+				FileName:         "configs/configs.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "configs/database.go.tmpl",
-				FileName:         fmt.Sprint("configs/database.go"),
+				FileName:         "configs/database.go",
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "configs/dockertest.go.tmpl",
+				FileName:         "configs/dockertest.go",
+				Parse:            false,
+			},
+			{
 				TemplateFileName: "configs/elasticsearch.go.tmpl",
-				FileName:         fmt.Sprint("configs/elasticsearch.go"),
+				FileName:         "configs/elasticsearch.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "server/server.go.tmpl",
-				FileName:         fmt.Sprint("internal/server/server.go"),
+				FileName:         "internal/server/server.go",
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "server/initDomains.go.tmpl",
+				FileName:         "internal/server/initDomains.go",
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "health/handler.go.tmpl",
+				FileName:         "internal/domain/health/handler.go",
+				Parse:            false,
+			},
+			{
 				TemplateFileName: "health/http/handler.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/health/handler/http/handler.go"),
+				FileName:         "internal/domain/health/handler/http/handler.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "health/http/register.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/health/handler/http/register.go"),
+				FileName:         "internal/domain/health/handler/http/register.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "health/postgres/postgres.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/health/repository/postgres/postgres.go"),
+				FileName:         "internal/domain/health/repository/postgres/postgres.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "health/usecase/usecase.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/health/usecase/usecase.go"),
+				FileName:         "internal/domain/health/usecase/usecase.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "health/usecase.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/health/usecase.go"),
+				FileName:         "internal/domain/health/usecase.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "health/repository.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/health/repository.go"),
+				FileName:         "internal/domain/health/repository.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "middleware/cors.go.tmpl",
-				FileName:         fmt.Sprintf("internal/middleware/cors.go"),
+				FileName:         "internal/middleware/cors.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "middleware/json.go.tmpl",
-				FileName:         fmt.Sprintf("internal/middleware/json.go"),
-				Parse:            true,
-			},
-			{
-				TemplateFileName: "middleware/paginate.go.tmpl",
-				FileName:         fmt.Sprintf("internal/middleware/paginate.go"),
+				FileName:         "internal/middleware/json.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "third_party/database/sqlx.go.tmpl",
-				FileName:         fmt.Sprintf("third_party/database/sqlx.go"),
+				FileName:         "third_party/database/sqlx.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "utility/database/db.go.tmpl",
-				FileName:         fmt.Sprintf("internal/utility/database/db.go"),
+				FileName:         "internal/utility/database/db.go",
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "utility/filter/base.go.tmpl",
+				FileName:         "internal/utility/filter/base.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "utility/respond/render.go.tmpl",
-				FileName:         fmt.Sprintf("internal/utility/respond/render.go"),
+				FileName:         "internal/utility/respond/render.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "utility/respond/urlParam.go.tmpl",
-				FileName:         fmt.Sprintf("internal/utility/respond/urlParam.go"),
+				FileName:         "internal/utility/respond/urlParam.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "utility/respond/validate.go.tmpl",
-				FileName:         fmt.Sprintf("internal/utility/respond/validate.go"),
+				FileName:         "internal/utility/respond/validate.go",
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "scripts/install-task.sh",
-				FileName:         fmt.Sprintf("scripts/install-task.sh"),
+				FileName:         "scripts/install-task.sh",
+				Parse:            false,
+			},
+			{
+				TemplateFileName: "scripts/stopDockertestByPort.sh",
+				FileName:         "scripts/stopDockertestByPort.sh",
 				Parse:            false,
 			},
 			{
 				TemplateFileName: "README.md.tmpl",
-				FileName:         fmt.Sprintf("README.md"),
+				FileName:         "README.md",
 				Parse:            false,
 			},
 			{
 				TemplateFileName: "docker-compose.yml.tmpl",
-				FileName:         fmt.Sprintf("docker-compose.yml"),
+				FileName:         "docker-compose.yml",
 				Parse:            false,
 			},
 			{
 				TemplateFileName: "Dockerfile.tmpl",
-				FileName:         fmt.Sprintf("Dockerfile"),
+				FileName:         "Dockerfile",
 				Parse:            false,
 			},
 			{
 				TemplateFileName: "sqlboiler.toml.tmpl",
-				FileName:         fmt.Sprintf("sqlboiler.toml"),
+				FileName:         "sqlboiler.toml",
 				Parse:            true,
 			},
 		}
 
 		a.SetStructure(structure)
-
-		if a.IsDirectoryExists(a.Project.Name) {
-			log.Fatalf("chosen directory name already exists: %s", a.Project.Name)
-		}
 
 		syscall.Umask(0)
 		err := os.Mkdir(a.Project.Name, 0755)

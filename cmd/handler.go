@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gmhafiz/go8gen/internal/app"
 	"log"
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"github.com/gmhafiz/go8gen/internal/app"
 )
 
 func init() {
@@ -23,18 +24,21 @@ var handlerCmd = &cobra.Command{
 		}
 
 		a := app.New()
-		p := app.Project{
-			Name:            getProjectName(),
-			ModuleName:      getModuleName(),
-			Domain:          strings.Title(args[0]),
-			DomainLowerCase: strings.ToLower(args[0]),
+		p := &app.Project{
+			Name:                   getProjectName(),
+			ModuleName:             getModuleName(),
+			Domain:                 strings.Title(args[0]),
+			DomainLowerCase:        strings.ToLower(args[0]),
+			ScaffoldAuthentication: false,
+			ScaffoldUseCase:        true,
+			ScaffoldRepository:     true,
 		}
 		if p.ModuleName == "" {
 			log.Fatal("error finding module name")
 		}
 		a.SetProject(p)
 
-		directories := createHandlerDirectoryNames(p.DomainLowerCase)
+		directories := createHandlerDirectoryNames(p.DomainLowerCase, p.ScaffoldUseCase, p.ScaffoldRepository)
 		err := a.CreateDirectories(directories)
 		if err != nil {
 			log.Fatal(err)
@@ -49,11 +53,21 @@ var handlerCmd = &cobra.Command{
 			{
 				TemplateFileName: "../tmpl/domain/http/handler_test.go.tmpl",
 				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/handler_test.go", p.DomainLowerCase),
-				Parse:            false,
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/http/register.go.tmpl",
 				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/register.go", p.DomainLowerCase),
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "../tmpl/domain/usecase.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/usecase.go", p.DomainLowerCase),
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "../tmpl/domain/usecase/usecase.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/usecase/usecase.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 		}
@@ -64,20 +78,28 @@ var handlerCmd = &cobra.Command{
 			log.Fatalf(ErrorColor, err)
 		}
 
-		err = injectCode(p)
+		err = p.InjectImportDomainHandlerCode()
 		if err != nil {
 			log.Fatalf(ErrorColor, err)
 		}
 
 		fmt.Printf(InfoColor, "...done.\n")
+
+		err = a.GoModTidy()
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
-func createHandlerDirectoryNames(domain string) []string {
+func createHandlerDirectoryNames(domain string, useCase, repo bool) []string {
 	directories := []string{
 		fmt.Sprintf("internal/domain/%s", domain),
 		fmt.Sprintf("internal/domain/%s/handler", domain),
 		fmt.Sprintf("internal/domain/%s/handler/http", domain),
+	}
+	if useCase {
+		directories = append(directories, fmt.Sprintf("internal/domain/%s/usecase/http", domain))
 	}
 	return directories
 }
