@@ -1,7 +1,8 @@
 # Examples of using this resource API
 # for vscode users, install `REST Client` to use these example.
 
-### Get All {{ .DomainLowerCase }}, by default gets the first 10 {{ .DomainLowerCase }} when ordered desc
+### Get List {{ .DomainLowerCase }}, by default gets the first 10 {{ .DomainLowerCase }} when
+ordered desc
 # curl --location --request GET 'http://localhost:3080/api/v1/{{ .DomainLowerCase }}'
 GET http://localhost:3080/api/v1/{{ .DomainLowerCase }}
 Accept: application/json

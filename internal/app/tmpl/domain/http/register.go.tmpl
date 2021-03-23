@@ -13,7 +13,7 @@ func RegisterHTTPEndPoints(router *chi.Mux, uc {{ .DomainLowerCase }}.UseCase) {
 	router.Route("/api/v1/{{ .DomainLowerCase }}", func(router chi.Router) {
 		router.Use(middleware.Json)
 		router.Post("/", h.Create)
-		router.Get("/", h.All)
+		router.Get("/", h.List)
 		router.Get("/{id}", h.Read)
 		router.Put("/{id}", h.Update)
 		router.Delete("/{id}", h.Delete)

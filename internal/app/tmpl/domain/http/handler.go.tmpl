@@ -10,7 +10,7 @@ import (
 
 type HTTP interface {
 	Create(w http.ResponseWriter, r *http.Request)
-	All(w http.ResponseWriter, r *http.Request)
+	List(w http.ResponseWriter, r *http.Request)
 	Read(w http.ResponseWriter, r *http.Request)
 	Update(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request)
@@ -32,7 +32,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	panic("implement me")
 }
 
-func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	panic("implement me")
 }
 

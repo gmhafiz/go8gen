@@ -37,6 +37,7 @@ func (h *Handler) Readiness(w http.ResponseWriter, r *http.Request) {
 	err := h.useCase.Readiness()
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 	respond.Render(w, http.StatusOK, nil)
 }

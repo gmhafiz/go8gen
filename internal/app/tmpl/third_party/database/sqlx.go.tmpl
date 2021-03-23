@@ -26,11 +26,6 @@ func NewSqlx(cfg *configs.Configs) *sqlx.DB {
 		log.Fatal(err)
 	}
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	database.Alive(db.DB)
 
 	db.DB.SetMaxOpenConns(cfg.Database.MaxConnPool)

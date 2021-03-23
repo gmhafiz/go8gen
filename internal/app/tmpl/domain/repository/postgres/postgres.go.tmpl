@@ -21,7 +21,7 @@ func (r *repository) Create(ctx context.Context, {{ .DomainLowerCase }} *models.
     panic("implement me")
 }
 
-func (r *repository) All(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{.Domain }}, error) {
+func (r *repository) List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{.Domain }}, error) {
 	panic("implement me")
 }
 

@@ -11,7 +11,7 @@ func (s *Server) initDomains() {
 }
 
 func (s *Server) initHealth() {
-    newHealthRepo := healthRepo.New(s.GetDB())
+    newHealthRepo := healthRepo.New(s.DB())
     newHealthUseCase := healthUseCase.New(newHealthRepo)
     healthHandler.RegisterHTTPEndPoints(s.router, newHealthUseCase)
 }

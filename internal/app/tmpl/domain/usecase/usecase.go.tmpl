@@ -32,8 +32,8 @@ func (u *{{ .Domain }}UseCase) Create(ctx context.Context, r {{ .DomainLowerCase
 	return {{ .DomainLowerCase }}Found, err
 }
 
-func (u *{{ .Domain }}UseCase) All(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{ .Domain }}, error) {
-	return u.{{ .DomainLowerCase }}Repo.All(ctx, f)
+func (u *{{ .Domain }}UseCase) List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{ .Domain }}, error) {
+	return u.{{ .DomainLowerCase }}Repo.List(ctx, f)
 }
 
 func (u *{{ .Domain }}UseCase) Read(ctx context.Context, {{ .DomainLowerCase }}ID int64) (*models.{{.Domain }}, error) {
