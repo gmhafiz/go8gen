@@ -28,6 +28,8 @@ type Project struct {
 	Password string
 	DBName   string
 	SSLMode  string
+
+	SqlBoilerDriverName string
 }
 
 type Structure struct {

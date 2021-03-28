@@ -60,12 +60,19 @@ func (a *App) willInputDBInformation() bool {
 
 func (a *App) inputDBType() {
 	result := promptSelect("Select Database type (postgres)", []string{"postgres", "mysql"})
-	if result == "postgres" {
+	switch result {
+	case "postgres":
 		a.Project.Type = "postgres"
 		a.Project.Port = 5432
-	} else if result == "mysql" {
+		a.Project.SqlBoilerDriverName = "psql"
+	case "mysql":
 		a.Project.Type = result
 		a.Project.Port = 3306
+		a.Project.SqlBoilerDriverName = "mysql"
+	case "mssql":
+		a.Project.Type = result
+		a.Project.Port = 1433
+		a.Project.SqlBoilerDriverName = "mssql"
 	}
 }
 
@@ -80,7 +87,6 @@ func (a *App) inputDriver() {
 	case "mysql":
 		defaultDriver = "sqlx"
 		driverOptions = []string{"sqlx", "database/sql"}
-		//driverOptions = []string{"sqlx", "go-sql-driver/mysql", "database/sql"}
 	}
 
 	a.Project.Driver = promptSelect(fmt.Sprintf("Select Database driver, (%s)", defaultDriver), driverOptions)

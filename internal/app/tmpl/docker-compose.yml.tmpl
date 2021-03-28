@@ -25,5 +25,19 @@ services:
     volumes:
       - postgres13go8db:/var/lib/postgresql/data
 
+  mariadb:
+    image: "mariadb:10"
+    restart: always
+    container_name: "go8_mariadb"
+    environment:
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_ROOT_PASSWORD=${DB_PASS}
+      - MYSQL_DATABASE=${DB_NAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb10go8db:/var/lib/mysql/data
+
 volumes:
   postgres13go8db:
+  mariadb10go8db:

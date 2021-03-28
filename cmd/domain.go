@@ -42,7 +42,7 @@ var domainCmd = &cobra.Command{
 		}
 		a.SetProject(p)
 
-		directories := createDirectoryNames(p.DomainLowerCase)
+		directories := createDirectoryNames(p.DomainLowerCase, p.Type)
 		err := a.CreateDirectories(directories)
 		if err != nil {
 			log.Fatal(err)
@@ -60,13 +60,13 @@ var domainCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/domain/repository/postgres/postgres.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository/postgres/postgres.go", p.DomainLowerCase),
+				TemplateFileName: "../tmpl/domain/repository/database/database.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/%s/%s.go", p.DomainLowerCase, p.Type, p.Type),
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/domain/repository/postgres/postgres_test.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository/postgres/postgres_test.go", p.DomainLowerCase),
+				TemplateFileName: "../tmpl/domain/repository/database/database_test.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/%s/%s_test.go", p.DomainLowerCase, p.Type, p.Type),
 				Parse:            true,
 			},
 			{
@@ -171,14 +171,14 @@ func getModuleName() string {
 	return ""
 }
 
-func createDirectoryNames(domain string) []string {
+func createDirectoryNames(domain, databaseType string) []string {
 	directories := []string{
 		"examples",
 		fmt.Sprintf("internal/domain/%s", domain),
 		fmt.Sprintf("internal/domain/%s/handler", domain),
 		fmt.Sprintf("internal/domain/%s/handler/http", domain),
 		fmt.Sprintf("internal/domain/%s/repository", domain),
-		fmt.Sprintf("internal/domain/%s/repository/postgres", domain),
+		fmt.Sprintf("internal/domain/%s/repository/%s", domain, databaseType),
 		fmt.Sprintf("internal/domain/%s/usecase", domain),
 	}
 

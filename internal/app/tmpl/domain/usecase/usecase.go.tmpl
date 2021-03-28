@@ -24,7 +24,7 @@ func (u *{{ .Domain }}UseCase) Create(ctx context.Context, r {{ .DomainLowerCase
 	if err != nil {
 		return nil, err
 	}
-	{{ .DomainLowerCase }}Found, err := u.{{ .DomainLowerCase }}Repo.Read(context.Background(), {{
+	{{ .DomainLowerCase }}Found, err := u.{{ .DomainLowerCase }}Repo.Read(ctx, {{
 .DomainLowerCase }}ID)
 	if err != nil {
 		return nil, err

@@ -57,7 +57,7 @@ var newCmd = &cobra.Command{
 			"internal/domain/health",
 			"internal/domain/health/handler",
 			"internal/domain/health/handler/http",
-			"internal/domain/health/repository/postgres",
+			"internal/domain/health/repository/database",
 			"internal/domain/health/usecase",
 			"internal/middleware",
 			"internal/models",
@@ -157,8 +157,8 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "health/postgres/postgres.go.tmpl",
-				FileName:         "internal/domain/health/repository/postgres/postgres.go",
+				TemplateFileName: "health/database/database.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/health/repository/database/%s.go", a.Project.Type),
 				Parse:            true,
 			},
 			{
