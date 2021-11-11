@@ -3,6 +3,7 @@ package filter
 import (
 	"net/url"
 	"strconv"
+    "strings"
 )
 
 const (
@@ -20,44 +21,41 @@ type Filter struct {
 	Page          int               `json:"page"`
 	Size          int               `json:"size"`
 	DisablePaging bool              `json:"disable_paging"`
-	Search        bool              `json:"search"`
 	Sort          map[string]string `json:"sort"`
+	Search        bool              `json:"search"`
 }
 
 func New(queries url.Values) *Filter {
-	page, _ := strconv.Atoi(queries.Get(queryParamPage))
-	size, _ := strconv.Atoi(queries.Get(queryParamSize))
+	var page, size int
+	page, err := strconv.Atoi(queries.Get(queryParamPage))
+	if err != nil {
+		page = paginationDefaultPage
+	}
+	size, err = strconv.Atoi(queries.Get(queryParamSize))
+	if err != nil {
+		size = paginationDefaultSize
+	}
+	offset := size * (page - 1) // calculates offset
+
 	disablePaging, _ := strconv.ParseBool(queries.Get(queryParamDisablePaging))
-	var isSearch bool
-
-    if queries.Has(queryParamSearch) || len(queries) > 0 {
-        isSearch = true
-    }
-
-    if !queries.Has(queryParamSize) {
-        size = paginationDefaultSize
-    }
-    if !queries.Has(queryParamPage) {
-        page = paginationDefaultPage
-    }
-	page = size * (page - 1) // calculates offset
 
 	sortKey := make(map[string]string)
 	if queries.Has(queryParamSort) {
-		s, _ := queries[queryParamSort]
+		s := queries[queryParamSort]
 		for _, val := range s {
 			split := strings.Split(val, ",")
 			if len(split) == 2 {
 				sortKey[split[0]] = split[1]
+			} else {
+				sortKey[split[0]] = "asc"
 			}
 		}
 	}
 
 	return &Filter{
-		Page:          page,
-		Size:          size,
+		Offset:        offset,
+		Limit:         uint(size),
 		DisablePaging: disablePaging,
-		Search:        isSearch,
-        Sort:          sortKey,
+		Sort:          sortKey,
 	}
 }

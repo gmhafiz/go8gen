@@ -6,23 +6,20 @@ import (
 	"{{ .ModuleName }}/internal/server"
 )
 
-const Version = "v0.1.0"
+// Version is injected using ldflags during build time
+var Version = "v0.1.0"
 
 // @title Go8
 // @version 0.1.0
 // @description Go + Postgres, Mysql + Chi Router + sqlx + Unit Testing starter kit for API development.
-
 // @contact.name <name>
 // @contact.url <url>
 // @contact.email <email>
-
 // @host {{ .Host }}:{{ .Port }}
 // @BasePath /
 func main() {
-	s := server.New(Version)
-	s.Init()
-
-	if err := s.Run(); err != nil {
-		log.Fatalf("%s", err.Error())
-	}
+	log.Printf("Starting API version: %s\n", Version)
+	s := server.New()
+	s.Init(Version)
+	s.Run()
 }

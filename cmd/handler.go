@@ -20,7 +20,7 @@ var handlerCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			log.Fatal("must put a name for the domain. e.g. : go8 domain book")
+			log.Fatal("Must put a name for the domain. e.g. : go8 domain book")
 		}
 
 		a := app.New()
@@ -46,11 +46,6 @@ var handlerCmd = &cobra.Command{
 
 		structure := []app.Structure{
 			{
-				TemplateFileName: "../tmpl/domain/http/handler.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/handler.go", p.DomainLowerCase),
-				Parse:            true,
-			},
-			{
 				TemplateFileName: "../tmpl/domain/http/handler_test.go.tmpl",
 				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/handler_test.go", p.DomainLowerCase),
 				Parse:            true,
@@ -58,11 +53,6 @@ var handlerCmd = &cobra.Command{
 			{
 				TemplateFileName: "../tmpl/domain/http/register.go.tmpl",
 				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/register.go", p.DomainLowerCase),
-				Parse:            true,
-			},
-			{
-				TemplateFileName: "../tmpl/domain/usecase.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/usecase.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{

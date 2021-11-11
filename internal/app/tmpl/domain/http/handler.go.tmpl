@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 
-	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
+	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}/usecase"
 	"{{ .ModuleName }}/internal/utility/respond"
     "{{ .ModuleName }}/internal/utility/validate"
 )
@@ -20,11 +20,11 @@ type HTTP interface {
 }
 
 type Handler struct {
-	useCase  {{ .DomainLowerCase }}.UseCase
+	useCase  usecase.UseCase
 	validate *validator.Validate
 }
 
-func NewHandler(validator *validator.Validate, useCase {{ .DomainLowerCase }}.UseCase) *Handler {
+func NewHandler(validator *validator.Validate, useCase usecase.UseCase) *Handler {
 	return &Handler{
 		useCase:  useCase,
 		validate: validator,
@@ -41,9 +41,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
     errs := validate.Validate(h.validate, req)
     if errs != nil {
-        respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
+        respond.Errors(w, http.StatusBadRequest, errs)
         return
     }
+
+    respond.Json(w, http.StatusCreated, create)
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {

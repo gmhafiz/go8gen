@@ -5,11 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/friendsofgo/errors"
-)
-
-var (
-	ErrInternalServerError = errors.New("internal server error")
+	"{{ .ModuleName }}/internal/utility/message"
 )
 
 type Standard struct {
@@ -20,7 +16,6 @@ type Standard struct {
 type Meta struct {
 	Size    int   `json:"size"`
 	Total   int64 `json:"total"`
-	Enabled bool  `json:"enabled,omitempty"`
 }
 
 func Json(w http.ResponseWriter, statusCode int, payload interface{}) {
@@ -33,17 +28,37 @@ func Json(w http.ResponseWriter, statusCode int, payload interface{}) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		log.Println(err)
-		Error(w, http.StatusInternalServerError, ErrInternalServerError)
+		Error(w, http.StatusInternalServerError, message.ErrInternalError)
 		return
 	}
 	_, err = w.Write(data)
 	if err != nil {
 		log.Println(err)
-		Error(w, http.StatusInternalServerError, ErrInternalServerError)
+		Error(w, http.StatusInternalServerError, message.ErrInternalError)
 		return
 	}
 }
 
 func Status(w http.ResponseWriter, statusCode int) {
 	w.WriteHeader(statusCode)
+}
+
+func Render(w http.ResponseWriter, statusCode int, payload interface{}) {
+	w.WriteHeader(statusCode)
+
+	if payload == nil {
+		_, err := w.Write(nil)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		data, err := json.Marshal(payload)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(data)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 }

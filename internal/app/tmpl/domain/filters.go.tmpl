@@ -13,6 +13,11 @@ type Filter struct {
 
 func Filters(queries url.Values) *Filter {
 	f := filter.New(queries)
+
+	// set search to be true if this query parameter exists
+    if queries.Has("field_name") {
+        f.Search = true
+    }
 	return &Filter{
 		Base:          *f,
 		// FieldName:         queries.Get("field_name"),

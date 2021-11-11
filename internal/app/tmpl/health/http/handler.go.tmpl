@@ -5,16 +5,21 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
-	"{{ .ModuleName }}/internal/domain/health"
+	"{{ .ModuleName }}/internal/domain/health/usecase"
 	"{{ .ModuleName }}/internal/utility/respond"
 )
 
+type Health interface {
+	Liveness(w http.ResponseWriter, r *http.Request)
+	Readiness(w http.ResponseWriter, r *http.Request)
+}
+
 type Handler struct {
-	useCase health.UseCase
+	useCase usecase.UseCase
 	validate *validator.Validate
 }
 
-func NewHandler(useCase health.UseCase, validate *validator.Validate) *Handler {
+func NewHandler(useCase usecase.UseCase, validate *validator.Validate) *Handler {
 	return &Handler{
 		useCase: useCase,
 		validate: validate,

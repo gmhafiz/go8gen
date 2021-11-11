@@ -9,6 +9,15 @@ import (
 	"{{ .ModuleName }}/internal/models"
 )
 
+type Repository interface {
+	Create(ctx context.Context, {{ .Domain }} *models.{{ .Domain }}) (uint64, error)
+	CreateRead(ctx context.Context, {{ .Domain }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error)
+	List(ctx context.Context, f *Filter) ([]*models.{{ .Domain }}, error)
+	Read(ctx context.Context, {{ .DomainLowerCase }}ID uint64) (*models.{{ .Domain }}, error)
+	Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) error
+	Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint64) error
+}
+
 type repository struct {
 	db *sqlx.DB
 }

@@ -5,8 +5,15 @@ import (
 
 	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
 	"{{ .ModuleName }}/internal/models"
-
 )
+
+type UseCase interface {
+	Create(ctx context.Context, {{ .DomainLowerCase }} Request) (*models.{{ .Domain }}, error)
+	List(ctx context.Context, f *Filter) ([]*models.{{ .Domain }}, error)
+	Read(ctx context.Context, {{ .DomainLowerCase }}ID uint64) (*models.{{ .Domain }}, error)
+	Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error)
+	Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint64) error
+}
 
 type useCase struct {
 	repo {{ .DomainLowerCase }}.Repository
@@ -20,12 +27,7 @@ func New(repo {{ .DomainLowerCase }}.Repository) *useCase {
 
 func (u *useCase) Create(ctx context.Context, r {{ .DomainLowerCase }}.Request) (*models.{{ .Domain }}, error) {
 	dto := {{ .DomainLowerCase }}.To{{ .Domain }}(&r)
-	{{ .DomainLowerCase }}ID, err := u.repo.Create(ctx, dto)
-	if err != nil {
-		return nil, err
-	}
-	{{ .DomainLowerCase }}Found, err := u.repo.Read(ctx, {{
-.DomainLowerCase }}ID)
+	{{ .DomainLowerCase }}Found, err := u.repo.CreateRead(ctx, dto)
 	if err != nil {
 		return nil, err
 	}

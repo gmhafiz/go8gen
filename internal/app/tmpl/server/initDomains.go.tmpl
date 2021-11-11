@@ -1,13 +1,30 @@
 package server
 
 import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+
     healthHandler "{{ .ModuleName }}/internal/domain/health/handler/http"
     healthRepo "{{ .ModuleName }}/internal/domain/health/repository/database"
     healthUseCase "{{ .ModuleName }}/internal/domain/health/usecase"
+    "{{ .ModuleName }}/internal/middleware"
+    "{{ .ModuleName }}/internal/utility/respond"
 )
 
 func (s *Server) initDomains() {
+	s.initVersion()
     s.initHealth()
+}
+
+func (s *Server) initVersion() {
+	s.router.Route("/version", func(router chi.Router) {
+		router.Use(middleware.Json)
+
+		router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			respond.Json(w, http.StatusOK, map[string]string{"version": s.version})
+		})
+	})
 }
 
 func (s *Server) initHealth() {

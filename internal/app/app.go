@@ -26,16 +26,6 @@ type Project struct {
 	ScaffoldRepository     bool
 
 	Database
-	//Type     string
-	//Driver   string
-	//Host     string
-	//Port     int
-	//Username string
-	//Password string
-	//DBName   string
-	//SSLMode  string
-	//
-	//SqlBoilerDriverName string
 
 	ExpandedID bool
 }

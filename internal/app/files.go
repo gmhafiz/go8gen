@@ -44,10 +44,12 @@ func (a *App) Fatal(msg error, args ...string) {
 }
 
 func (a *App) InitGoMod() error {
-	cmd := exec.Command("go", "mod", "init", a.Project.ModuleName)
+	cmd := exec.Command("go", "mod", "tidy")
+	//cmd.Dir = a.Project.Path
+	cmd.Path = a.Project.Path
 	_, err := cmd.Output()
 	if err != nil {
-		return errors.Wrap(err, "error running: go mod init")
+		return errors.Wrap(err, "error running: go mod tidy")
 	}
 	return nil
 }
