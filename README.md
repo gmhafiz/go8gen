@@ -24,7 +24,7 @@ This project has changed from being a boilerplate into a code generator.
 
 Install tool. Requires go >= v1.13
 
-    go install github.com/gmhafiz/go8gen@latest
+    go install github.com/gmhafiz/go8gen/cmd/go8@latest
     
 Create new project using `new` argument followed by project name. Go modules name will be the
  same as project name. 
@@ -70,7 +70,7 @@ example:
 
 # Version
 
-### v0.14.1
+### v0.14.2
 
  * New layout
 
