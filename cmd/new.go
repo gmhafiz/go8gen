@@ -56,7 +56,7 @@ var newCmd = &cobra.Command{
 		a.Project.Path = path
 		a.Project.Name = name
 
-		a.Project.Address = "http://localhost:3080/api/v1"
+		a.Project.Address = "http://localhost:3080"
 
 		if a.IsDirectoryExists(a.Project.Path) {
 			fmt.Printf(ErrorColor, fmt.Sprintf("Please select a different name or directory because it already exists: %s\n", a.Project.Path))
@@ -108,6 +108,11 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "go.mod.tmpl",
+				FileName:         "go.mod",
+				Parse:            true,
+			},
+			{
 				TemplateFileName: ".gitignore.tmpl",
 				FileName:         ".gitignore",
 				Parse:            false,
@@ -130,7 +135,7 @@ var newCmd = &cobra.Command{
 			{
 				TemplateFileName: "cmd/route/route.go.tmpl",
 				FileName:         "cmd/route/route.go",
-				Parse:            false,
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "cmd/go8/main.go.tmpl",
@@ -325,20 +330,20 @@ var newCmd = &cobra.Command{
 			a.Fatal(err)
 		}
 
-		//err = a.InitGoMod()
-		//if err != nil {
-		//	a.Fatal(err)
-		//}
+		err = a.TidyGoMod()
+		if err != nil {
+			a.Fatal(err)
+		}
 
 		fmt.Printf(InfoColor, "...done.\n")
 		fmt.Println("\nChange directory to")
 		fmt.Printf(InfoColor, fmt.Sprintf("    cd %s\n", a.Project.Path))
-		fmt.Println("You may now run the following command to download dependencies")
-		fmt.Printf(InfoColor, "    go mod tidy\n")
+		fmt.Println("\nEdit database credentials")
+		fmt.Printf(InfoColor, "    vi .env\n\n")
 		fmt.Println("Run the API with")
 		fmt.Printf(InfoColor, fmt.Sprintf("    go run cmd/%s/main.go\n\n", a.Project.ModuleName))
 		fmt.Println("Test API liveness with")
-		fmt.Printf(InfoColor, fmt.Sprintf("    curl -v %s/health/liveness\n\n", a.Project.Address))
+		fmt.Printf(InfoColor, fmt.Sprintf("    curl -v %s/health/readiness\n\n", a.Project.Address))
 	},
 }
 

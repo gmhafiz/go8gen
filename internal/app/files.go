@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -43,12 +44,13 @@ func (a *App) Fatal(msg error, args ...string) {
 	log.Fatalf(msg.Error(), args)
 }
 
-func (a *App) InitGoMod() error {
+func (a *App) TidyGoMod() error {
+	fmt.Println("\nDownloading dependencies with go mod tidy. This will take a while...")
 	cmd := exec.Command("go", "mod", "tidy")
-	//cmd.Dir = a.Project.Path
-	cmd.Path = a.Project.Path
+	cmd.Dir = a.Project.Path
 	_, err := cmd.Output()
 	if err != nil {
+		log.Println(err)
 		return errors.Wrap(err, "error running: go mod tidy")
 	}
 	return nil

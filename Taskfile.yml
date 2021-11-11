@@ -4,6 +4,6 @@ tasks:
   install:
     desc: Build and install
     cmds:
-      - go build -o go8 main.go
+      - go build -o go8 cmd/go8/main.go
       - mv go8 ~/go/bin/go8
     silent: true
