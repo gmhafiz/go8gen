@@ -11,16 +11,6 @@ type Res struct {
 	// FieldName         string      `json:"field_name" deepcopier:"field:field_name"`
 }
 
-type T struct {
-	Data interface{} `json:"data"`
-	Meta Meta        `json:"meta,omitempty"`
-}
-
-type Meta struct {
-	Size  int   `json:"size,omitempty"`
-	Total int64 `json:"total,omitempty"`
-}
-
 func Resource({{ .DomainLowerCase }} *models.{{ .Domain }}) (Res, error) {
 	var resource Res
 

@@ -1,12 +1,16 @@
 package usecase
 
-import "{{ .ModuleName }}/internal/domain/health"
+import "{{ .ModuleName }}/internal/domain/health/repository/database"
 
-type Health struct {
-	healthRepo health.Repository
+type UseCase interface {
+	Readiness() error
 }
 
-func New(health health.Repository) *Health {
+type Health struct {
+	healthRepo database.Repository
+}
+
+func New(health database.Repository) *Health {
 	return &Health{
 		healthRepo: health,
 	}

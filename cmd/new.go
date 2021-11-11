@@ -35,7 +35,9 @@ var newCmd = &cobra.Command{
 		checkVersion()
 
 		if len(args) == 0 {
-			log.Fatal("must put a name. Example:\ngo8 new new_project")
+			fmt.Println("Must put a name. Example:")
+			fmt.Printf(InfoColor, "    go8 new awesome_project\n\n")
+			os.Exit(1)
 		}
 
 		a := app.New()
@@ -57,7 +59,8 @@ var newCmd = &cobra.Command{
 		a.Project.Address = "http://localhost:3080/api/v1"
 
 		if a.IsDirectoryExists(a.Project.Path) {
-			log.Fatalf("chosen directory name already exists: %s", a.Project.Name)
+			fmt.Printf(ErrorColor, fmt.Sprintf("Please select a different name or directory because it already exists: %s\n", a.Project.Path))
+			os.Exit(1)
 		}
 
 		a.Prompt()
@@ -66,6 +69,7 @@ var newCmd = &cobra.Command{
 			"cmd",
 			"cmd/migrate",
 			"cmd/migrate/migrate",
+			"cmd/route",
 			"configs",
 			"database",
 			"database/migrations",
@@ -85,6 +89,7 @@ var newCmd = &cobra.Command{
 			"internal/utility/message",
 			"internal/utility/param",
 			"internal/utility/respond",
+			"internal/utility/time",
 			"internal/utility/validate",
 			"scripts",
 			"third_party",
@@ -121,6 +126,11 @@ var newCmd = &cobra.Command{
 				TemplateFileName: "cmd/migrate/migrate/migrate.go.tmpl",
 				FileName:         "cmd/migrate/migrate/migrate.go",
 				Parse:            true,
+			},
+			{
+				TemplateFileName: "cmd/route/route.go.tmpl",
+				FileName:         "cmd/route/route.go",
+				Parse:            false,
 			},
 			{
 				TemplateFileName: "cmd/go8/main.go.tmpl",
@@ -163,11 +173,6 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "health/handler.go.tmpl",
-				FileName:         "internal/domain/health/handler.go",
-				Parse:            false,
-			},
-			{
 				TemplateFileName: "health/http/handler.go.tmpl",
 				FileName:         "internal/domain/health/handler/http/handler.go",
 				Parse:            true,
@@ -188,16 +193,6 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "health/usecase.go.tmpl",
-				FileName:         "internal/domain/health/usecase.go",
-				Parse:            true,
-			},
-			{
-				TemplateFileName: "health/repository.go.tmpl",
-				FileName:         "internal/domain/health/repository.go",
-				Parse:            true,
-			},
-			{
 				TemplateFileName: "middleware/cors.go.tmpl",
 				FileName:         "internal/middleware/cors.go",
 				Parse:            true,
@@ -206,6 +201,11 @@ var newCmd = &cobra.Command{
 				TemplateFileName: "middleware/json.go.tmpl",
 				FileName:         "internal/middleware/json.go",
 				Parse:            true,
+			},
+			{
+				TemplateFileName: "middleware/recover.go.tmpl",
+				FileName:         "internal/middleware/recover.go",
+				Parse:            false,
 			},
 			{
 				TemplateFileName: "third_party/database/sqlx.go.tmpl",
@@ -228,8 +228,18 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "utility/message/error.go.tmpl",
+				FileName:         "internal/utility/message/error.go",
+				Parse:            false,
+			},
+			{
 				TemplateFileName: "utility/respond/error.go.tmpl",
 				FileName:         "internal/utility/respond/error.go",
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "utility/time/time.go.tmpl",
+				FileName:         "internal/utility/time/time.go",
 				Parse:            true,
 			},
 			{
@@ -248,8 +258,18 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "scripts/check_version.sh",
+				FileName:         "scripts/check_version.sh",
+				Parse:            false,
+			},
+			{
 				TemplateFileName: "scripts/install-task.sh",
 				FileName:         "scripts/install-task.sh",
+				Parse:            false,
+			},
+			{
+				TemplateFileName: "scripts/install_gomock.sh",
+				FileName:         "scripts/install_gomock.sh",
 				Parse:            false,
 			},
 			{
@@ -305,10 +325,10 @@ var newCmd = &cobra.Command{
 			a.Fatal(err)
 		}
 
-		err = a.InitGoMod()
-		if err != nil {
-			a.Fatal(err)
-		}
+		//err = a.InitGoMod()
+		//if err != nil {
+		//	a.Fatal(err)
+		//}
 
 		fmt.Printf(InfoColor, "...done.\n")
 		fmt.Println("\nChange directory to")
@@ -317,6 +337,8 @@ var newCmd = &cobra.Command{
 		fmt.Printf(InfoColor, "    go mod tidy\n")
 		fmt.Println("Run the API with")
 		fmt.Printf(InfoColor, fmt.Sprintf("    go run cmd/%s/main.go\n\n", a.Project.ModuleName))
+		fmt.Println("Test API liveness with")
+		fmt.Printf(InfoColor, fmt.Sprintf("    curl -v %s/health/liveness\n\n", a.Project.Address))
 	},
 }
 
