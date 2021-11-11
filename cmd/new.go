@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -17,7 +18,12 @@ import (
 
 func init() {
 	rootCmd.AddCommand(newCmd)
+	newCmd.Flags().StringVarP(&DirPath, "path", "p", "", "path to new project")
 }
+
+var (
+	DirPath = ""
+)
 
 var newCmd = &cobra.Command{
 	Use:   "new",
@@ -34,12 +40,23 @@ var newCmd = &cobra.Command{
 
 		a := app.New()
 
-		a.Project.Name = strings.ToLower(args[0])
+		name := strings.ToLower(args[0])
 		if len(args) == 2 {
 			a.Project.ModuleName = args[1]
 		}
 
-		if a.IsDirectoryExists(a.Project.Name) {
+		path, err := cmd.Flags().GetString("path")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		path, name = parseProjectNameAndPath(path, name)
+		a.Project.Path = path
+		a.Project.Name = name
+
+		a.Project.Address = "http://localhost:3080/api/v1"
+
+		if a.IsDirectoryExists(a.Project.Path) {
 			log.Fatalf("chosen directory name already exists: %s", a.Project.Name)
 		}
 
@@ -65,12 +82,21 @@ var newCmd = &cobra.Command{
 			"internal/utility",
 			"internal/utility/database",
 			"internal/utility/filter",
+			"internal/utility/message",
+			"internal/utility/param",
 			"internal/utility/respond",
+			"internal/utility/validate",
 			"scripts",
 			"third_party",
 			"third_party/database",
+			"third_party/validate",
 		}
 		structure := []app.Structure{
+			{
+				TemplateFileName: ".air.toml.tmpl",
+				FileName:         ".air.toml",
+				Parse:            true,
+			},
 			{
 				TemplateFileName: ".env.tmpl",
 				FileName:         ".env",
@@ -122,11 +148,6 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "configs/dockertest.go.tmpl",
-				FileName:         "configs/dockertest.go",
-				Parse:            false,
-			},
-			{
 				TemplateFileName: "configs/elasticsearch.go.tmpl",
 				FileName:         "configs/elasticsearch.go",
 				Parse:            true,
@@ -158,7 +179,7 @@ var newCmd = &cobra.Command{
 			},
 			{
 				TemplateFileName: "health/database/database.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/health/repository/database/%s.go", a.Project.Type),
+				FileName:         "internal/domain/health/repository/database/database.go",
 				Parse:            true,
 			},
 			{
@@ -192,6 +213,11 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "third_party/validate/validate.go.tmpl",
+				FileName:         "third_party/validate/validate.go",
+				Parse:            false,
+			},
+			{
 				TemplateFileName: "utility/database/db.go.tmpl",
 				FileName:         "internal/utility/database/db.go",
 				Parse:            true,
@@ -202,18 +228,23 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "utility/respond/error.go.tmpl",
+				FileName:         "internal/utility/respond/error.go",
+				Parse:            true,
+			},
+			{
 				TemplateFileName: "utility/respond/render.go.tmpl",
 				FileName:         "internal/utility/respond/render.go",
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "utility/respond/urlParam.go.tmpl",
-				FileName:         "internal/utility/respond/urlParam.go",
+				TemplateFileName: "utility/param/param.go.tmpl",
+				FileName:         "internal/utility/param/param.go",
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "utility/respond/validate.go.tmpl",
-				FileName:         "internal/utility/respond/validate.go",
+				TemplateFileName: "utility/validate/validate.go.tmpl",
+				FileName:         "internal/utility/validate/validate.go",
 				Parse:            true,
 			},
 			{
@@ -251,12 +282,12 @@ var newCmd = &cobra.Command{
 		a.SetStructure(structure)
 
 		syscall.Umask(0)
-		err := os.Mkdir(a.Project.Name, 0755)
+		err = os.Mkdir(a.Project.Path, 0755)
 		if err != nil {
 			a.Fatal(errors.Wrap(err, "error creating directory: %s"), a.Project.Name)
 
 		}
-		err = os.Chdir(a.Project.Name)
+		err = os.Chdir(a.Project.Path)
 		if err != nil {
 			a.Fatal(errors.Wrap(err, "error going into directory: %s"), a.Project.Name)
 		}
@@ -268,24 +299,52 @@ var newCmd = &cobra.Command{
 		if err != nil {
 			a.Fatal(err, a.Project.Name)
 		}
-		err = a.InitGoMod()
-		if err != nil {
-			a.Fatal(err)
-		}
 
 		err = a.CreateFiles()
 		if err != nil {
 			a.Fatal(err)
 		}
 
+		err = a.InitGoMod()
+		if err != nil {
+			a.Fatal(err)
+		}
+
 		fmt.Printf(InfoColor, "...done.\n")
+		fmt.Println("\nChange directory to")
+		fmt.Printf(InfoColor, fmt.Sprintf("    cd %s\n", a.Project.Path))
+		fmt.Println("You may now run the following command to download dependencies")
+		fmt.Printf(InfoColor, "    go mod tidy\n")
+		fmt.Println("Run the API with")
+		fmt.Printf(InfoColor, fmt.Sprintf("    go run cmd/%s/main.go\n\n", a.Project.ModuleName))
 	},
+}
+
+func parseProjectNameAndPath(path, name string) (projectPath, projectName string) {
+	if path != "" {
+		_, projectName = filepath.Split(path)
+		projectPath = path
+	} else {
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+		projectPath = filepath.Join(cwd, name)
+		projectName = name
+	}
+
+	return projectPath, projectName
 }
 
 func checkVersion() {
 	version := runtime.Version()
-	res := semver.Compare(version, "1.13")
+	res := semver.Compare(version, "1.14")
 	if res < 0 {
-		log.Fatal(errors.New("go version must be > 1.13 for go modules support"))
+		log.Fatal("go version must be > 1.14 for go modules support")
+	}
+
+	goSupport := semver.Compare(version, "1.16")
+	if goSupport < 0 {
+		log.Println("warning: only last 2 versions of go are supported officially by the Go team. See https://golang.org/doc/devel/release#policy")
 	}
 }

@@ -1,4 +1,4 @@
-package mysql
+package database
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func New(db *sqlx.DB) *repository {
 	return &repository{db: db}
 }
 
-func (r *repository) Create(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) (int64, error) {
+func (r *repository) Create(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }})(uint64, error) {
     panic("implement me")
 }
 
@@ -25,7 +25,7 @@ func (r *repository) List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter)
 	panic("implement me")
 }
 
-func (r *repository) Read(ctx context.Context, {{ .DomainLowerCase }}ID int64) (*models.{{ .Domain}}, error) {
+func (r *repository) Read(ctx context.Context, {{ .DomainLowerCase }}ID uint64) (*models.{{.Domain}}, error) {
 	panic("implement me")
 }
 
@@ -33,6 +33,6 @@ func (r *repository) Update(ctx context.Context, {{ .DomainLowerCase }} *models.
 	panic("implement me")
 }
 
-func (r *repository) Delete(ctx context.Context, {{ .DomainLowerCase }}ID int64) error {
+func (r *repository) Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint64) error {
 	panic("implement me")
 }

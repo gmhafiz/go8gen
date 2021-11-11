@@ -1,0 +1,24 @@
+package {{ .DomainLowerCase }}
+
+import (
+	"encoding/json"
+	"io"
+
+	"{{ .ModuleName }}/internal/models"
+)
+
+type Request struct {
+	Filter
+    // {{ .Domain }}ID     string `json:"-"`
+	// FieldName         string `json:"field_name" validate:"required"`
+}
+
+func (r *Request) Bind(body io.ReadCloser) error {
+	return json.NewDecoder(body).Decode(r)
+}
+
+func To{{ .Domain }}(req *Request) *models.{{ .Domain }} {
+	return &models.{{ .Domain }}{
+		// {{ "{{ FieldName }}" }}:         req.{{ "{{ req.fieldName }}" }},
+	}
+}

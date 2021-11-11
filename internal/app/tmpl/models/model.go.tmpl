@@ -8,7 +8,7 @@ import (
 
 // {{ .Domain }} is an object representing the database table.
 type {{ .Domain }} struct {
-	{{ .Domain }}ID        int64       `db:"book_id" boil:"{{ .DomainLowerCase }}_id" json:"{{ .DomainLowerCase }}_id" toml:"{{ .DomainLowerCase }}_id" yaml:"{{ .DomainLowerCase }}_id"`
+	ID            uint64       `db:"id" boil:"id" json:"id" toml:"id" yaml:"id"`
 	Title         string      `db:"title" boil:"title" json:"title" toml:"title" yaml:"title"`
 	PublishedDate time.Time   `db:"published_date" boil:"published_date" json:"published_date" toml:"published_date" yaml:"published_date"`
 	ImageURL      null.String `db:"image_url" boil:"image_url" json:"image_url,omitempty" toml:"image_url" yaml:"image_url,omitempty"`
@@ -19,7 +19,7 @@ type {{ .Domain }} struct {
 }
 
 var {{ .Domain }}Columns = struct {
-	{{ .Domain }}ID        string
+	ID            string
 	Title         string
 	PublishedDate string
 	ImageURL      string
@@ -28,7 +28,7 @@ var {{ .Domain }}Columns = struct {
 	UpdatedAt     string
 	DeletedAt     string
 }{
-	{{ .Domain }}ID:        "{{ .DomainLowerCase }}_id",
+	ID:            "id",
 	Title:         "title",
 	PublishedDate: "published_date",
 	ImageURL:      "image_url",

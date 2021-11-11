@@ -1,43 +1,24 @@
 package {{ .DomainLowerCase }}
 
 import (
-	"time"
-
 	"github.com/jinzhu/copier"
-	"github.com/jinzhu/now"
-	"github.com/volatiletech/null/v8"
 
 	"{{ .ModuleName }}/internal/models"
-	"{{ .ModuleName }}/internal/utility/filter"
 )
 
-type Request struct {
-	{{ .Domain }}ID        string `json:"-"`
-	Title         string `json:"title" validate:"required"`
-	PublishedDate string `json:"published_date" validate:"required"`
-	ImageURL      string `json:"image_url" validate:"url"`
-	Description   string `json:"description" validate:"required"`
-	filter.Filter
-}
-
 type Res struct {
-	{{ .Domain }}ID        int64       `json:"{{ .DomainLowerCase }}_id" deepcopier:"field:{{ .DomainLowerCase }}_id" db:"id"`
-	Title         string      `json:"title" deepcopier:"field:title" db:"title"`
-	PublishedDate time.Time   `json:"published_date" deepcopier:"field:force" db:"published_date"`
-	ImageURL      null.String `json:"image_url" deepcopier:"field:image_url" db:"image_url"`
-	Description   null.String `json:"description" deepcopier:"field:description"`
+	{{ .Domain }}ID        uint64       `json:"id" deepcopier:"field:id"`
+	// FieldName         string      `json:"field_name" deepcopier:"field:field_name"`
 }
 
-func To{{ .Domain }}(req *Request) *models.{{ .Domain }} {
-	return &models.{{ .Domain }}{
-		Title:         req.Title,
-		PublishedDate: now.MustParse(req.PublishedDate),
-		ImageURL: null.String{
-			String: req.ImageURL,
-			Valid:  true,
-		},
-		Description: req.Description,
-	}
+type T struct {
+	Data interface{} `json:"data"`
+	Meta Meta        `json:"meta,omitempty"`
+}
+
+type Meta struct {
+	Size  int   `json:"size,omitempty"`
+	Total int64 `json:"total,omitempty"`
 }
 
 func Resource({{ .DomainLowerCase }} *models.{{ .Domain }}) (Res, error) {
@@ -51,9 +32,9 @@ func Resource({{ .DomainLowerCase }} *models.{{ .Domain }}) (Res, error) {
 	return resource, nil
 }
 
-func Resources({{ .DomainLowerCase }}s []*models.{{ .Domain }}) (interface{}, error) {
+func Resources({{ .DomainLowerCase }}s []*models.{{ .Domain }}) ([]Res, error) {
 	if len({{ .DomainLowerCase }}s) == 0 {
-		return make([]string, 0), nil
+		return make([]Res, 0), nil
 	}
 
 	var resources []Res

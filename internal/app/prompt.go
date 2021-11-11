@@ -27,12 +27,16 @@ func (a *App) inputModuleName() {
 }
 
 func (a *App) inputDBInformation() {
-	proceed := a.willInputDBInformation()
+	proceed := a.willInputDBType()
+	if proceed {
+		a.inputDBType()
+	}
+
+	proceed = a.willInputDBInformation()
 	if !proceed {
 		return
 	}
 
-	a.inputDBType()
 	a.inputDriver()
 
 	input := prompt("Type in database address (default: 0.0.0.0)")
@@ -46,6 +50,15 @@ func (a *App) inputDBInformation() {
 	a.Project.Username = prompt("Type in database username")
 	a.Project.Password = prompt("Type in database password")
 	a.Project.SSLMode = promptSelect("Enable SSL Mode? (disable)", []string{"disable", "enable"})
+}
+
+func (a *App) willInputDBType() bool {
+	result := promptSelect("Choose Database Type", []string{"no", "yes"})
+	if result == "no" {
+		return false
+	} else {
+		return true
+	}
 }
 
 func (a *App) willInputDBInformation() bool {
@@ -82,7 +95,7 @@ func (a *App) inputDriver() {
 
 	switch a.Project.Type {
 	case "postgres":
-		defaultDriver = "sqlx/pq"
+		defaultDriver = "sqlx/pqx"
 		driverOptions = []string{"sqlx", "sqlboiler"}
 	case "mysql":
 		defaultDriver = "sqlx"
@@ -103,6 +116,7 @@ func (a *App) scaffoldAuthentication() {
 func (a *App) printChoices() {
 	fmt.Println("\nYou chose")
 	fmt.Println("\n---------")
+	fmt.Printf("Project Path           : %s\n", a.Project.Path)
 	fmt.Printf("Module Name            : %s\n", a.Project.ModuleName)
 	fmt.Printf("Database Name          : %s\n", a.Project.DBName)
 	fmt.Printf("Database Type          : %s\n", a.Project.Type)

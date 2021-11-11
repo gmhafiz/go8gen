@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/modfile"
 
@@ -29,20 +31,25 @@ var domainCmd = &cobra.Command{
 
 		a := app.New()
 		p := &app.Project{
-			Name:                   getProjectName(),
-			ModuleName:             getModuleName(),
+			ModuleName:             getProjectName(),
 			Domain:                 strings.Title(args[0]),
 			DomainLowerCase:        strings.ToLower(args[0]),
 			ScaffoldAuthentication: false,
 			ScaffoldUseCase:        true,
 			ScaffoldRepository:     true,
+			ExpandedID:             true,
+			Database:               app.Database{Type: getDatabaseType()},
 		}
 		if p.ModuleName == "" {
 			log.Fatal("error finding module name")
 		}
 		a.SetProject(p)
 
-		directories := createDirectoryNames(p.DomainLowerCase, p.Type)
+		if domainExists(p.Domain) {
+			log.Fatal("domain has already exists")
+		}
+
+		directories := createDirectoryNames(p.DomainLowerCase)
 		err := a.CreateDirectories(directories)
 		if err != nil {
 			log.Fatal(err)
@@ -55,23 +62,13 @@ var domainCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/domain/repository.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository.go", p.DomainLowerCase),
-				Parse:            true,
-			},
-			{
 				TemplateFileName: "../tmpl/domain/repository/database/database.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository/%s/%s.go", p.DomainLowerCase, p.Type, p.Type),
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/database/database.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/repository/database/database_test.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository/%s/%s_test.go", p.DomainLowerCase, p.Type, p.Type),
-				Parse:            true,
-			},
-			{
-				TemplateFileName: "../tmpl/domain/usecase.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/usecase.go", p.DomainLowerCase),
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/database/database_test.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{
@@ -85,14 +82,10 @@ var domainCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/domain/handler.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/handler.go", p.DomainLowerCase),
-				Parse:            true,
-			},
-			{
 				TemplateFileName: "../tmpl/domain/http/handler.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/handler.go", p.DomainLowerCase),
-				Parse:            true,
+				FileName: fmt.Sprintf("internal/domain/%s/handler/http/handler.go",
+					p.DomainLowerCase),
+				Parse: true,
 			},
 			{
 				TemplateFileName: "../tmpl/domain/http/handler_test.go.tmpl",
@@ -105,6 +98,21 @@ var domainCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "../tmpl/domain/repository.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/repository.go", p.DomainLowerCase),
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "../tmpl/domain/usecase.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/usecase.go", p.DomainLowerCase),
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "../tmpl/domain/handler.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/handler.go", p.DomainLowerCase),
+				Parse:            true,
+			},
+			{
 				TemplateFileName: "../tmpl/domain/filters.go.tmpl",
 				FileName:         fmt.Sprintf("internal/domain/%s/filters.go", p.DomainLowerCase),
 				Parse:            true,
@@ -112,6 +120,11 @@ var domainCmd = &cobra.Command{
 			{
 				TemplateFileName: "../tmpl/domain/resource.go.tmpl",
 				FileName:         fmt.Sprintf("internal/domain/%s/resource.go", p.DomainLowerCase),
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "../tmpl/domain/request.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/request.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{
@@ -139,6 +152,39 @@ var domainCmd = &cobra.Command{
 
 		fmt.Printf(InfoColor, "...done.\n")
 	},
+}
+
+func domainExists(domain string) bool {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	pathToDomain := filepath.Join(dir, "internal", "domain", strings.ToLower(domain))
+	_, err = os.Stat(pathToDomain)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func getDatabaseType() string {
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	type dbType struct {
+		Driver string `envconfig:"DB_DRIVER"`
+	}
+	var t dbType
+	err = envconfig.Process("DB", &t)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return t.Driver
 }
 
 // adapted from https://stackoverflow.com/a/63393712/1033134
@@ -171,14 +217,14 @@ func getModuleName() string {
 	return ""
 }
 
-func createDirectoryNames(domain, databaseType string) []string {
+func createDirectoryNames(domain string) []string {
 	directories := []string{
 		"examples",
 		fmt.Sprintf("internal/domain/%s", domain),
 		fmt.Sprintf("internal/domain/%s/handler", domain),
 		fmt.Sprintf("internal/domain/%s/handler/http", domain),
 		fmt.Sprintf("internal/domain/%s/repository", domain),
-		fmt.Sprintf("internal/domain/%s/repository/%s", domain, databaseType),
+		fmt.Sprintf("internal/domain/%s/repository/database", domain),
 		fmt.Sprintf("internal/domain/%s/usecase", domain),
 	}
 

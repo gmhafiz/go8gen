@@ -13,38 +13,51 @@ const (
 	queryParamPage          = "page"
 	queryParamSize          = "size"
 	queryParamSearch        = "search"
+	queryParamSort          = "sort"
 )
 
 type Filter struct {
-	Page          int  `json:"page"`
-	Size          int  `json:"size"`
-	DisablePaging bool `json:"disable_paging"`
-	Search        bool `json:"search"`
+	Page          int               `json:"page"`
+	Size          int               `json:"size"`
+	DisablePaging bool              `json:"disable_paging"`
+	Search        bool              `json:"search"`
+	Sort          map[string]string `json:"sort"`
 }
 
 func New(queries url.Values) *Filter {
 	page, _ := strconv.Atoi(queries.Get(queryParamPage))
 	size, _ := strconv.Atoi(queries.Get(queryParamSize))
 	disablePaging, _ := strconv.ParseBool(queries.Get(queryParamDisablePaging))
-	isSearch := has(queries, queryParamSearch)
+	var isSearch bool
 
-	if !has(queries, queryParamSize) {
-		size = paginationDefaultSize
-	}
+    if queries.Has(queryParamSearch) || len(queries) > 0 {
+        isSearch = true
+    }
 
-	if !has(queries, queryParamPage) {
-		page = paginationDefaultPage
-	}
+    if !queries.Has(queryParamSize) {
+        size = paginationDefaultSize
+    }
+    if !queries.Has(queryParamPage) {
+        page = paginationDefaultPage
+    }
 	page = size * (page - 1) // calculates offset
+
+	sortKey := make(map[string]string)
+	if queries.Has(queryParamSort) {
+		s, _ := queries[queryParamSort]
+		for _, val := range s {
+			split := strings.Split(val, ",")
+			if len(split) == 2 {
+				sortKey[split[0]] = split[1]
+			}
+		}
+	}
 
 	return &Filter{
 		Page:          page,
 		Size:          size,
 		DisablePaging: disablePaging,
 		Search:        isSearch,
+        Sort:          sortKey,
 	}
-}
-
-func has(queries url.Values, param string) bool {
-	return queries.Get(param) != ""
 }

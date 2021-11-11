@@ -71,11 +71,11 @@ func (p *Project) InjectImportDomainHandlerCode() error {
 	var importTmpl1 string
 	if p.ScaffoldUseCase {
 		importTmpl1 = fmt.Sprintf(`	%sHandler "%s/internal/domain/%s/handler/http"
-	%sRepo "%s/internal/domain/%s/repository/%s"
+	%sRepo "%s/internal/domain/%s/repository/database"
 	%sUseCase "%s/internal/domain/%s/usecase"`,
-			p.DomainLowerCase, p.Name, p.DomainLowerCase,
-			p.DomainLowerCase, p.Name, p.DomainLowerCase, p.Type,
-			p.DomainLowerCase, p.Name, p.DomainLowerCase,
+			p.DomainLowerCase, p.ModuleName, p.DomainLowerCase,
+			p.DomainLowerCase, p.ModuleName, p.DomainLowerCase,
+			p.DomainLowerCase, p.ModuleName, p.DomainLowerCase,
 		)
 	} else {
 		importTmpl1 = fmt.Sprintf(`    new%sUseCase := %sUseCase.New$sUseCase()
@@ -87,7 +87,7 @@ func (p *Project) InjectImportDomainHandlerCode() error {
 	if p.ScaffoldUseCase {
 		initHandlerTmpl = fmt.Sprintf(`
 func (s *Server) init%s() {
-	new%sRepo := %sRepo.New(s.GetDB())
+	new%sRepo := %sRepo.New(s.DB())
 	new%sUseCase := %sUseCase.New(new%sRepo)
 	%sHandler.RegisterHTTPEndPoints(s.router, new%sUseCase)
 }`, p.Domain,

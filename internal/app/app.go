@@ -11,15 +11,36 @@ import (
 var static embed.FS
 
 type Project struct {
+	Path            string
+	Address         string
 	Name            string
 	ModuleName      string
 	Domain          string
 	DomainLowerCase string
 
+	Host string
+	Port int
+
 	ScaffoldAuthentication bool
 	ScaffoldUseCase        bool
 	ScaffoldRepository     bool
 
+	Database
+	//Type     string
+	//Driver   string
+	//Host     string
+	//Port     int
+	//Username string
+	//Password string
+	//DBName   string
+	//SSLMode  string
+	//
+	//SqlBoilerDriverName string
+
+	ExpandedID bool
+}
+
+type Database struct {
 	Type     string
 	Driver   string
 	Host     string
@@ -46,7 +67,11 @@ type App struct {
 
 func New() *App {
 	return &App{
-		Project:   Project{},
+		Project: Project{
+			Database: Database{
+				Type: "postgres",
+			},
+		},
 		Structure: []Structure{},
 		Static:    static,
 	}

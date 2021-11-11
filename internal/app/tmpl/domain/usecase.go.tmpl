@@ -9,7 +9,7 @@ import (
 type UseCase interface {
 	Create(ctx context.Context, {{ .DomainLowerCase }} Request) (*models.{{ .Domain }}, error)
 	List(ctx context.Context, f *Filter) ([]*models.{{ .Domain }}, error)
-	Read(ctx context.Context, {{ .DomainLowerCase }}ID int64) (*models.{{ .Domain }}, error)
+	Read(ctx context.Context, {{ .DomainLowerCase }}ID uint64) (*models.{{ .Domain }}, error)
 	Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error)
-	Delete(ctx context.Context, {{ .DomainLowerCase }}ID int64) error
+	Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint64) error
 }

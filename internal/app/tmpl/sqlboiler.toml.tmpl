@@ -12,3 +12,23 @@ pass   = "{{ .Password }}"
 sslmode = "disable"
 schema = "public"
 blacklist = ["migrations", "schema_migrations"]
+
+
+[mysql]
+host   = "{{ .Host }}"
+port   = {{ .Port }}
+dbname = "{{ .DBName }}"
+user   = "{{ .Username }}"
+pass   = "{{ .Password }}"
+sslmode = "disable"
+blacklist = ["migrations", "schema_migrations"]
+
+[mssql]
+host   = "{{ .Host }}"
+port   = {{ .Port }}
+dbname = "{{ .DBName }}"
+user   = "{{ .Username }}"
+pass   = "{{ .Password }}"
+sslmode = "disable"
+schema  = "notdbo"
+blacklist = ["migrations", "schema_migrations"]

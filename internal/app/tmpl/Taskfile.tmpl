@@ -31,7 +31,7 @@ tasks:
   gen:orm:
     desc: Reads your current database schema and creates models as well as orm.
     cmds:
-      - sqlboiler --wipe --add-soft-deletes -t db {{ .SqlBoilerDriverName }}
+      - sqlboiler --wipe --add-soft-deletes -t db psql
 
   run:
     desc: Runs the app
@@ -40,6 +40,22 @@ tasks:
       - go run cmd/go8/main.go
     silent: true
 
+  dev:
+    desc: Hot reload. Watch for file changes and rebuild binary.
+    cmds:
+      - air
+    silent: true
+
+  build:
+    desc: Creates a compiled binary and copy configuration files
+    cmds:
+      - task: check
+      - task: swagger
+      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -w -s -v -i -o go8 cmd/go8/main.go
+      - mkdir -p bin
+      - mv go8 bin/
+      - cp .env bin
+    silent: false
   check:
     desc: Checks integrity of program
     cmds:
@@ -51,16 +67,11 @@ tasks:
       - task test
     silent: true
 
-  build:
-    desc: Creates a compiled binary and copy configuration files
+  clean:
+    desc: Clears built files
     cmds:
-      - task: check
-      - task: swagger
-      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -v -i -o go8 cmd/go8/main.go
-      - mkdir -p bin
-      - mv go8 bin/
-      - cp .env bin
-    silent: false
+      - rm -rf ./bin/*
+      - rm -rf ./bin/.*
 
   tidy:
     desc: Downloads dependencies and removes unused ones
@@ -91,7 +102,11 @@ tasks:
     desc: Test all code
     cmds:
       - go test ./...
-      - task: stop:dockertest
+
+  test:verbose:
+    desc: Test all code with verbose mode
+    cmds:
+      - go test -v ./...
 
   coverage:
     desc: Peform test coverage
@@ -137,11 +152,11 @@ tasks:
     desc: Run e2e test
     dir: docker-test
     cmds:
-      - task: dockertest-stop
-      - docker-compose build
+      - task: dockertest:stop
+      - docker-compose build --no-cache
       - docker-compose up -d
       - docker exec -t go8_container_test "/home/appuser/app/e2e"
-      - task: dockertest-stop
+      - task: dockertest:stop
     silent: true
 
   dockertest:stop:
@@ -150,21 +165,17 @@ tasks:
     cmds:
       - docker-compose down -v
 
-  stop:dockertest:
-    desc: Stop hanging dockertest container
-    cmds:
-      - scripts/stopDockertestByPort.sh 5434
-
   install:tools:
     desc: Install all optional cli tools
     cmds:
-      - task: install-golangci
-      - task: install-swagger
-      - task: install-testify
-      - task: install-gomock
-      - task: install-golangmigrate
-      - task: install-sqlboiler
-      - task: install-gosec
+      - task: install:golangci
+      - task: install:swagger
+      - task: install:testify
+      - task: install:gomock
+      - task: install:golangmigrate
+      - task: install:sqlboiler
+      - task: install:gosec
+      - task: install:air
     silent: true
 
   install:sqlboiler:
@@ -173,7 +184,6 @@ tasks:
       - GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
       - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
       - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
-      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql
 
   install:golangci:
     desc: Install golangci linter
@@ -193,7 +203,7 @@ tasks:
   install:gomock:
     desc: Install gomock test framework
     cmds:
-      - GO111MODULE=on go get github.com/golang/mock/mockgen@v1.4.4
+      - go install github.com/golang/mock/mockgen@v1.5.0
 
   install:golangmigrate:
     desc: Install golang migration tool
@@ -206,3 +216,8 @@ tasks:
     desc: Install golang security check. https://github.com/securego/gosec
     cmds:
       - go get github.com/securego/gosec/v2/cmd/gosec
+
+  install:air:
+    desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary
+    cmds:
+      - go get -u github.com/cosmtrek/air

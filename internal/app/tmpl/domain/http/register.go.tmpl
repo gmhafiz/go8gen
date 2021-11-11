@@ -1,14 +1,15 @@
-package http
+package {{ .DomainLowerCase }}
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 
 	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
 	"{{ .ModuleName }}/internal/middleware"
 )
 
-func RegisterHTTPEndPoints(router *chi.Mux, uc {{ .DomainLowerCase }}.UseCase) {
-	h := NewHandler(uc)
+func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc {{ .DomainLowerCase }}.UseCase) {
+	h := NewHandler(validator, uc)
 
 	router.Route("/api/v1/{{ .DomainLowerCase }}", func(router chi.Router) {
 		router.Use(middleware.Json)

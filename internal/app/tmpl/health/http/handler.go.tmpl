@@ -3,17 +3,21 @@ package http
 import (
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
+
 	"{{ .ModuleName }}/internal/domain/health"
 	"{{ .ModuleName }}/internal/utility/respond"
 )
 
 type Handler struct {
 	useCase health.UseCase
+	validate *validator.Validate
 }
 
-func NewHandler(useCase health.UseCase) *Handler {
+func NewHandler(useCase health.UseCase, validate *validator.Validate) *Handler {
 	return &Handler{
 		useCase: useCase,
+		validate: validate,
 	}
 }
 
@@ -24,7 +28,7 @@ func NewHandler(useCase health.UseCase) *Handler {
 // @Failure 500
 // @Router /health/liveness [get]
 func (h *Handler) Liveness(w http.ResponseWriter, r *http.Request) {
-	respond.Render(w, http.StatusOK, nil)
+	respond.Json(w, http.StatusOK, nil)
 }
 
 // Alive Database
@@ -39,5 +43,5 @@ func (h *Handler) Readiness(w http.ResponseWriter, r *http.Request) {
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	respond.Render(w, http.StatusOK, nil)
+	respond.Json(w, http.StatusOK, nil)
 }

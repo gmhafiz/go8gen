@@ -1,8 +1,8 @@
-package http
+package {{ .DomainLowerCase }}
 
 import (
     "testing"
-}
+)
 
 //go:generate mockgen -package mock -source handler.go -destination=../../mock/mock_handler.go
 

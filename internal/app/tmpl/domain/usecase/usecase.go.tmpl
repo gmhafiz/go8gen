@@ -8,46 +8,47 @@ import (
 
 )
 
-type {{ .Domain}}UseCase struct {
-	{{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository
+type useCase struct {
+	repo {{ .DomainLowerCase }}.Repository
 }
 
-func New({{ .DomainLowerCase }}Repo {{ .DomainLowerCase }}.Repository) *{{ .Domain }}UseCase {
-	return &{{ .Domain }}UseCase{
-		{{ .DomainLowerCase }}Repo: {{ .DomainLowerCase }}Repo,
+func New(repo {{ .DomainLowerCase }}.Repository) *useCase {
+	return &useCase {
+		repo: repo,
 	}
 }
 
-func (u *{{ .Domain }}UseCase) Create(ctx context.Context, r {{ .DomainLowerCase }}.Request) (*models.{{ .Domain }}, error) {
-	bk := {{ .DomainLowerCase }}.To{{ .Domain }}(&r)
-	{{ .DomainLowerCase }}ID, err := u.{{ .DomainLowerCase }}Repo.Create(ctx, bk)
+func (u *useCase) Create(ctx context.Context, r {{ .DomainLowerCase }}.Request) (*models.{{ .Domain }}, error) {
+	dto := {{ .DomainLowerCase }}.To{{ .Domain }}(&r)
+	{{ .DomainLowerCase }}ID, err := u.repo.Create(ctx, dto)
 	if err != nil {
 		return nil, err
 	}
-	{{ .DomainLowerCase }}Found, err := u.{{ .DomainLowerCase }}Repo.Read(ctx, {{
+	{{ .DomainLowerCase }}Found, err := u.repo.Read(ctx, {{
 .DomainLowerCase }}ID)
 	if err != nil {
 		return nil, err
 	}
-	return {{ .DomainLowerCase }}Found, err
+
+	return {{ .DomainLowerCase }}Found, nil
 }
 
-func (u *{{ .Domain }}UseCase) List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{ .Domain }}, error) {
-	return u.{{ .DomainLowerCase }}Repo.List(ctx, f)
+func (u *useCase) List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{ .Domain }}, error) {
+	return u.repo.List(ctx, f)
 }
 
-func (u *{{ .Domain }}UseCase) Read(ctx context.Context, {{ .DomainLowerCase }}ID int64) (*models.{{.Domain }}, error) {
-	return u.{{ .DomainLowerCase }}Repo.Read(ctx, {{ .DomainLowerCase }}ID)
+func (u *useCase) Read(ctx context.Context, {{ .DomainLowerCase }}ID uint64) (*models.{{.Domain}}, error) {
+	return u.repo.Read(ctx, {{ .DomainLowerCase }}ID)
 }
 
-func (u *{{ .Domain }}UseCase) Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error) {
-	err := u.{{ .DomainLowerCase }}Repo.Update(ctx, {{ .DomainLowerCase }})
+func (u *useCase) Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error) {
+	err := u.repo.Update(ctx, {{ .DomainLowerCase }})
 	if err != nil {
 		return nil, err
 	}
-	return u.{{ .DomainLowerCase }}Repo.Read(ctx, {{ .DomainLowerCase }}.{{ .Domain }}ID)
+	return u.repo.Read(ctx, {{ .DomainLowerCase }}.ID)
 }
 
-func (u *{{ .Domain }}UseCase) Delete(ctx context.Context, {{ .DomainLowerCase }}ID int64) error {
-	return u.{{ .DomainLowerCase }}Repo.Delete(ctx, {{ .DomainLowerCase }}ID)
+func (u *useCase) Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint64) error {
+	return u.repo.Delete(ctx, {{ .DomainLowerCase }}ID)
 }

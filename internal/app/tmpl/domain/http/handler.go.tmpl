@@ -1,11 +1,14 @@
-package http
+package {{ .DomainLowerCase }}
 
 import (
 	"net/http"
 
+	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 
 	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
+	"{{ .ModuleName }}/internal/utility/respond"
+    "{{ .ModuleName }}/internal/utility/validate"
 )
 
 type HTTP interface {
@@ -21,19 +24,38 @@ type Handler struct {
 	validate *validator.Validate
 }
 
-func NewHandler(useCase {{ .DomainLowerCase }}.UseCase) *Handler {
+func NewHandler(validator *validator.Validate, useCase {{ .DomainLowerCase }}.UseCase) *Handler {
 	return &Handler{
 		useCase:  useCase,
-		validate: validator.New(),
+		validate: validator,
 	}
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	panic("implement me")
+	var req container.Request
+	err := render.DecodeJSON(r.Body, req)
+	if err != nil {
+        respond.Error(w, http.StatusBadRequest, err)
+        return
+    }
+
+    errs := validate.Validate(h.validate, req)
+    if errs != nil {
+        respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
+        return
+    }
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
-	panic("implement me")
+    filters := {{ .DomainLowerCase }}.Filters(r.URL.Query())
+
+    res, err := h.useCase.List(r.Context(), filters)
+	if err != nil {
+        respond.Error(w, http.StatusInternalServerError, err)
+        return
+	}
+
+	respond.Render(w, http.StatusOK, res)
 }
 
 func (h *Handler) Read(w http.ResponseWriter, r *http.Request) {

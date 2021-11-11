@@ -2,12 +2,13 @@ package http
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 
 	"{{ .ModuleName }}/internal/domain/health"
 )
 
-func RegisterHTTPEndPoints(router *chi.Mux, uc health.UseCase) {
-	h := NewHandler(uc)
+func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc health.UseCase) {
+	h := NewHandler(uc, validator)
 
 	router.Route("/health", func(router chi.Router) {
 		router.Get("/liveness", h.Liveness)

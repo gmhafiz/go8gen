@@ -11,6 +11,7 @@ import (
 
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -19,6 +20,7 @@ import (
 	"{{ .ModuleName }}/configs"
 	"{{ .ModuleName }}/internal/middleware"
 	"{{ .ModuleName }}/third_party/database"
+	"{{ .ModuleName }}/third_party/validate"
 )
 
 const (
@@ -31,6 +33,7 @@ type Server struct {
 	db         *sqlx.DB
 	router     *chi.Mux
 	httpServer *http.Server
+	validator  *validator.Validate
 }
 
 func New(version string) *Server {
@@ -42,6 +45,7 @@ func (s *Server) Init() {
 	s.newConfig()
 	s.newDatabase()
 	s.newRouter()
+	s.newValidator()
 	s.initDomains()
 	s.startSwagger()
 }
@@ -61,7 +65,7 @@ func (s *Server) newDatabase() {
 		log.Fatal("please fill in database credentials in .env file")
 	}
 	s.db = database.NewSqlx(s.cfg)
-	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnPool)
+	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
 }
 
 func (s *Server) newRouter() {
@@ -69,7 +73,16 @@ func (s *Server) newRouter() {
 	s.setGlobalMiddleware()
 }
 
+func (s *Server) newValidator() {
+	s.validator = validate.New()
+}
+
 func (s *Server) setGlobalMiddleware() {
+	s.router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+		_, _ = w.Write([]byte(`{"error": "endpoint not found"}`))
+		return
+	})
 	s.router.Use(middleware.Cors)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)
@@ -78,13 +91,14 @@ func (s *Server) setGlobalMiddleware() {
 }
 
 func (s *Server) Migrate() {
-	if s.cfg.DockerTest.Driver == "postgres" {
+
+	if s.cfg.Database.Driver == "postgres" {
 		driver, err := postgres.WithInstance(s.DB().DB, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
 		m, err := migrate.NewWithDatabaseInstance(
-			databaseMigrationPath, s.cfg.DockerTest.Driver, driver,
+			databaseMigrationPath, s.cfg.Database.Driver, driver,
 		)
 		if err != nil {
 			log.Fatalf("error connecting to database: %v", err)
@@ -164,7 +178,7 @@ func swaggerServer(router *chi.Mux) {
 
 func printAllRegisteredRoutes(router *chi.Mux) {
 	walkFunc := func(method string, path string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		log.Printf("path: %s method: %s ", path, method)
+		log.Printf("%-6s %s ", method, path)
 		return nil
 	}
 	if err := chi.Walk(router, walkFunc); err != nil {
