@@ -15,6 +15,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of go8",
 	Long:  `All software has versions. This is go8's`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("go8 golang API scaffolder v0.1.0")
+		fmt.Println("go8 golang API scaffolder v0.14.1")
 	},
 }

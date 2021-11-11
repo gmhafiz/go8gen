@@ -70,7 +70,7 @@ example:
 
 # Version
 
-### v0.14.0
+### v0.14.1
 
  * New layout
 
