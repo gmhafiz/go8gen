@@ -78,7 +78,7 @@ var newCmd = &cobra.Command{
 			"internal/domain/health",
 			"internal/domain/health/handler",
 			"internal/domain/health/handler/http",
-			"internal/domain/health/repository/database",
+			"internal/domain/health/repository/postgres",
 			"internal/domain/health/usecase",
 			"internal/middleware",
 			"internal/models",

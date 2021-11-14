@@ -13,13 +13,12 @@ const (
 	queryParamDisablePaging = "disable_paging"
 	queryParamPage          = "page"
 	queryParamSize          = "size"
-	queryParamSearch        = "search"
 	queryParamSort          = "sort"
 )
 
 type Filter struct {
-	Page          int               `json:"page"`
-	Size          int               `json:"size"`
+	Offset        int               `json:"page"`
+	Limit         int               `json:"size"`
 	DisablePaging bool              `json:"disable_paging"`
 	Sort          map[string]string `json:"sort"`
 	Search        bool              `json:"search"`
@@ -54,7 +53,7 @@ func New(queries url.Values) *Filter {
 
 	return &Filter{
 		Offset:        offset,
-		Limit:         uint(size),
+		Limit:         size,
 		DisablePaging: disablePaging,
 		Sort:          sortKey,
 	}

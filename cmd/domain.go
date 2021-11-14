@@ -62,13 +62,13 @@ var domainCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/domain/repository/database/database.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository/database/database.go", p.DomainLowerCase),
+				TemplateFileName: "../tmpl/domain/repository/postgres/postgres.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/postgres/postgres.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/domain/repository/database/database_test.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository/database/database_test.go", p.DomainLowerCase),
+				TemplateFileName: "../tmpl/domain/repository/postgres/postgres_test.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/postgres/postgres_test.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{
