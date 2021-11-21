@@ -106,15 +106,9 @@ example:
 
  * Initial starter kit boilerplate for Go + Postgres + Chi Router + SqlBoiler  API Development
  
-# Motivation
 
-On the topic of API development, there are two opposing camps between a framework (like echo, gin
-, buffalo and starting small and only add features you need. However , starting small and adding
- features aren't that straightforward. Also, you will want to structure your project in such a
-  way that there are clear separation of functionalities for different files. This is the idea
-   behind [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). This way, it is easy to switch whichever library to another of your choice.
-   
-   
-# Acknowledgements
+# License
 
- * https://github.com/joshuabezaleel/unit-testing-golang-mocks
+MIT
+
+Refer to LICENSE file.
