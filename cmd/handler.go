@@ -16,7 +16,7 @@ func init() {
 
 var handlerCmd = &cobra.Command{
 	Use:   "handler",
-	Short: "Create a new domain including controller, use case, and repository",
+	Short: "Create a new handler",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {

@@ -11,7 +11,7 @@
        ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.
          .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
               .........                ......                .......
-An API generator for Go API development for [go8](https://github.com/gmhafiz/go8). Full documentation is that link.
+An API generator for Go API development for [go8](https://github.com/gmhafiz/go8). Full documentation in that link.
 
 # Features
 
