@@ -5,21 +5,23 @@ import (
 
 	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
 	"{{ .ModuleName }}/internal/models"
+    "{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}/repository/database"
+
 )
 
 type UseCase interface {
-	Create(ctx context.Context, {{ .DomainLowerCase }} Request) (*models.{{ .Domain }}, error)
-	List(ctx context.Context, f *Filter) ([]*models.{{ .Domain }}, error)
+	Create(ctx context.Context, {{ .DomainLowerCase }} {{ .DomainLowerCase }}.Request) (*models.{{ .Domain }}, error)
+	List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{ .Domain }}, error)
 	Read(ctx context.Context, {{ .DomainLowerCase }}ID uint64) (*models.{{ .Domain }}, error)
 	Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error)
 	Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint64) error
 }
 
 type useCase struct {
-	repo {{ .DomainLowerCase }}.Repository
+	repo database.Repository
 }
 
-func New(repo {{ .DomainLowerCase }}.Repository) *useCase {
+func New(repo database.Repository) *useCase {
 	return &useCase {
 		repo: repo,
 	}

@@ -1,4 +1,4 @@
-package {{ .DomainLowerCase }}
+package handler
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 
+	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
 	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}/usecase"
 	"{{ .ModuleName }}/internal/utility/respond"
     "{{ .ModuleName }}/internal/utility/validate"
@@ -32,7 +33,7 @@ func NewHandler(validator *validator.Validate, useCase usecase.UseCase) *Handler
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var req container.Request
+	var req {{ .DomainLowerCase }}.Request
 	err := render.DecodeJSON(r.Body, req)
 	if err != nil {
         respond.Error(w, http.StatusBadRequest, err)
@@ -42,6 +43,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
     errs := validate.Validate(h.validate, req)
     if errs != nil {
         respond.Errors(w, http.StatusBadRequest, errs)
+        return
+    }
+
+    create, err := h.useCase.Create(r.Context(), req)
+    if err != nil {
+        respond.Error(w, http.StatusInternalServerError, err)
         return
     }
 

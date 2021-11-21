@@ -89,7 +89,7 @@ func (p *Project) InjectImportDomainHandlerCode() error {
 func (s *Server) init%s() {
 	new%sRepo := %sRepo.New(s.DB())
 	new%sUseCase := %sUseCase.New(new%sRepo)
-	%sHandler.RegisterHTTPEndPoints(s.router, new%sUseCase)
+	%sHandler.RegisterHTTPEndPoints(s.router, s.validator, new%sUseCase)
 }`, p.Domain,
 			p.Domain, p.DomainLowerCase,
 			p.Domain, p.DomainLowerCase, p.Domain,

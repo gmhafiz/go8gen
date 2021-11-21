@@ -62,13 +62,13 @@ var domainCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/domain/repository/postgres/postgres.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository/postgres/postgres.go", p.DomainLowerCase),
+				TemplateFileName: "../tmpl/domain/repository/database/postgres.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/database/postgres.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/domain/repository/postgres/postgres_test.go.tmpl",
-				FileName:         fmt.Sprintf("internal/domain/%s/repository/postgres/postgres_test.go", p.DomainLowerCase),
+				TemplateFileName: "../tmpl/domain/repository/database/postgres_test.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/repository/database/postgres_test.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{
@@ -79,6 +79,11 @@ var domainCmd = &cobra.Command{
 			{
 				TemplateFileName: "../tmpl/domain/usecase/usecase_test.go.tmpl",
 				FileName:         fmt.Sprintf("internal/domain/%s/usecase/usecase_test.go", p.DomainLowerCase),
+				Parse:            true,
+			},
+			{
+				TemplateFileName: "../tmpl/domain/http/handler.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s/handler/http/handler.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 			{

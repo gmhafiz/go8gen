@@ -115,8 +115,8 @@ func (a *App) scaffoldAuthentication() {
 
 func (a *App) printChoices() {
 	fmt.Println("\nYou chose")
-	fmt.Println("\n---------")
-	fmt.Printf("Project Path           : %s\n", a.Project.Path)
+	fmt.Println("---------")
+	fmt.Printf("\nProject Path         : %s\n", a.Project.Path)
 	fmt.Printf("Module Name            : %s\n", a.Project.ModuleName)
 	fmt.Printf("Database Name          : %s\n", a.Project.DBName)
 	fmt.Printf("Database Type          : %s\n", a.Project.Type)
