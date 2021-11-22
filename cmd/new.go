@@ -78,7 +78,7 @@ var newCmd = &cobra.Command{
 			"internal/domain/health",
 			"internal/domain/health/handler",
 			"internal/domain/health/handler/http",
-			"internal/domain/health/repository/postgres",
+			"internal/domain/health/database",
 			"internal/domain/health/usecase",
 			"internal/middleware",
 			"internal/models",
@@ -189,7 +189,7 @@ var newCmd = &cobra.Command{
 			},
 			{
 				TemplateFileName: "health/database/database.go.tmpl",
-				FileName:         "internal/domain/health/repository/database/database.go",
+				FileName:         "internal/domain/health/database/database.go",
 				Parse:            true,
 			},
 			{
@@ -290,7 +290,7 @@ var newCmd = &cobra.Command{
 			{
 				TemplateFileName: "docker-compose.yml.tmpl",
 				FileName:         "docker-compose.yml",
-				Parse:            false,
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "Dockerfile.tmpl",
