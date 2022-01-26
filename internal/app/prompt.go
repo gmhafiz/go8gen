@@ -40,16 +40,29 @@ func (a *App) inputDBInformation() {
 	a.inputDriver()
 
 	input := prompt("Type in database address (default: 0.0.0.0)")
-	if input == "" {
-		a.Project.Host = "0.0.0.0"
-	} else {
+	if input != "" {
 		a.Project.Host = input
 	}
 
-	a.Project.DBName = prompt("Type in database name")
-	a.Project.Username = prompt("Type in database username")
-	a.Project.Password = prompt("Type in database password")
-	a.Project.SSLMode = promptSelect("Enable SSL Mode? (disable)", []string{"disable", "enable"})
+	input = prompt("Type in database name")
+	if input != "" {
+		a.Project.DBName = input
+	}
+
+	input = prompt("Type in database username")
+	if input != "" {
+		a.Project.Username = input
+	}
+
+	input = prompt("Type in database password")
+	if input != "" {
+		a.Project.Password = input
+	}
+
+	input = promptSelect("Enable SSL Mode? (disable)", []string{"disable", "enable"})
+	if input != "" {
+		a.Project.SSLMode = input
+	}
 }
 
 func (a *App) willInputDBType() bool {
@@ -95,8 +108,8 @@ func (a *App) inputDriver() {
 
 	switch a.Project.Type {
 	case "postgres":
-		defaultDriver = "sqlx/pqx"
-		driverOptions = []string{"sqlx", "sqlboiler"}
+		defaultDriver = "sqlx/pgx"
+		driverOptions = []string{"sqlx/pgx", "ent"}
 	case "mysql":
 		defaultDriver = "sqlx"
 		driverOptions = []string{"sqlx", "database/sql"}

@@ -6,13 +6,13 @@ import (
 	"github.com/go-chi/chi/v5"
 
     healthHandler "{{ .ModuleName }}/internal/domain/health/handler/http"
-    healthRepo "{{ .ModuleName }}/internal/domain/health/repository/database"
+    healthRepo "{{ .ModuleName }}/internal/domain/health/database"
     healthUseCase "{{ .ModuleName }}/internal/domain/health/usecase"
     "{{ .ModuleName }}/internal/middleware"
     "{{ .ModuleName }}/internal/utility/respond"
 )
 
-func (s *Server) initDomains() {
+func (s *Server) InitDomains() {
 	s.initVersion()
     s.initHealth()
 }

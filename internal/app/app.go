@@ -10,6 +10,11 @@ import (
 //go:embed tmpl/*
 var static embed.FS
 
+type TaskFile struct {
+	CliArgs string
+	N       string
+}
+
 type Project struct {
 	Path            string
 	Address         string
@@ -26,6 +31,8 @@ type Project struct {
 	ScaffoldRepository     bool
 
 	Database
+
+	TaskFile
 
 	ExpandedID bool
 }
@@ -59,7 +66,17 @@ func New() *App {
 	return &App{
 		Project: Project{
 			Database: Database{
-				Type: "postgres",
+				Type:     "postgres",
+				Driver:   "postgres",
+				Host:     "localhost",
+				Port:     5432,
+				Username: "postgres",
+				Password: "",
+				DBName:   "postgres",
+			},
+			TaskFile: TaskFile{
+				CliArgs: "{{.CLI_ARGS}}",
+				N:       "{{.n}}",
 			},
 		},
 		Structure: []Structure{},

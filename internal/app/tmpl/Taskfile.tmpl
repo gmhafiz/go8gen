@@ -9,9 +9,9 @@ tasks:
       - task -l
 
   migrate:create:
-    desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME=name_of_file'
+    desc: Creates .sql migration files (Up and Down). Set name by appending with '-- name_of_file'
     cmds:
-      - migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
+      - migrate create -ext sql -dir database/migrations -format unix {{.TaskFile.CliArgs}}
 
   migrate:
     desc: Migrates UP the database
@@ -21,12 +21,12 @@ tasks:
   migrate:step:
     desc: Migrates UP the database
     cmds:
-      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up "{{.n}}"
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up {{.TaskFile.N}}
 
   migrate:rollback:
     desc: Rollback the database by 'n' step(s)
     cmds:
-      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down "{{.n}}"
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down {{.TaskFile.N}}
 
   gen:orm:
     desc: Reads your current database schema and creates models as well as orm.
@@ -37,7 +37,7 @@ tasks:
     desc: Runs the app
     cmds:
       - task: swagger
-      - go run cmd/go8/main.go
+      - go run cmd/{{ .Name }}/main.go
     silent: true
 
   dev:
@@ -51,19 +51,21 @@ tasks:
     cmds:
       - task: check
       - task: swagger
-      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -w -s -v -i -o go8 cmd/go8/main.go
+      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -w -s -v -i -o {{ .Name }} cmd/{{ .Name }}/main.go
       - mkdir -p bin
-      - mv go8 bin/
+      - mv {{ .Name }} bin/
       - cp .env bin
     silent: false
   check:
     desc: Checks integrity of program
     cmds:
+      - task generate
+      - task swagger
+      - task fmt
       - task tidy
       - task vet
       - task golint
       - task security
-      - task fmt
       - task test
     silent: true
 
@@ -126,17 +128,17 @@ tasks:
   swagger:
     desc: Generates Swagger page for API reference
     cmds:
-      - swag init -g cmd/go8/main.go
+      - swag init -g cmd/{{ .Name }}/main.go
 
   docker:build:
     desc: Builds a Docker image a server container
     cmds:
-      - docker build -t go8/server -f Dockerfile .
+      - docker build -t {{ .Name }}/server -f Dockerfile .
 
   docker:run:
     desc: Runs the app Docker image as a Docker container
     cmds:
-      - docker run -p 3080:3080 --rm -it --net=host --name go8container go8/server
+      - docker run -p 3080:3080 --rm -it --net=host --name {{ .Name }}container {{ .Name }}/server
 
   docker-compose:start:
     desc: Runs server and database using docker-compose
@@ -155,7 +157,7 @@ tasks:
       - task: dockertest:stop
       - docker-compose build --no-cache
       - docker-compose up -d
-      - docker exec -t go8_container_test "/home/appuser/app/e2e"
+      - docker exec -t {{ .Name }}_container_test "/home/appuser/app/e2e"
       - task: dockertest:stop
     silent: true
 
@@ -173,7 +175,6 @@ tasks:
       - task: install:testify
       - task: install:gomock
       - task: install:golangmigrate
-      - task: install:sqlboiler
       - task: install:gosec
       - task: install:air
     silent: true

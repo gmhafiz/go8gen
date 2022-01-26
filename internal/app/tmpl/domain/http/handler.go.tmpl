@@ -64,7 +64,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
         return
 	}
 
-	respond.Render(w, http.StatusOK, res)
+	respond.Json(w, http.StatusOK, res)
 }
 
 func (h *Handler) Read(w http.ResponseWriter, r *http.Request) {

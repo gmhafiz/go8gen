@@ -70,7 +70,7 @@ var newCmd = &cobra.Command{
 			"cmd/migrate",
 			"cmd/migrate/migrate",
 			"cmd/route",
-			"configs",
+			"config",
 			"database",
 			"database/migrations",
 			"internal",
@@ -120,7 +120,7 @@ var newCmd = &cobra.Command{
 			{
 				TemplateFileName: "Taskfile.tmpl",
 				FileName:         "Taskfile.yml",
-				Parse:            false,
+				Parse:            true,
 			},
 			{
 				TemplateFileName: "cmd/migrate/main.go.tmpl",
@@ -143,28 +143,28 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "configs/api.go.tmpl",
-				FileName:         "configs/api.go",
+				TemplateFileName: "config/api.go.tmpl",
+				FileName:         "config/api.go",
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "configs/cache.go.tmpl",
-				FileName:         "configs/cache.go",
+				TemplateFileName: "config/cache.go.tmpl",
+				FileName:         "config/cache.go",
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "configs/configs.go.tmpl",
-				FileName:         "configs/configs.go",
+				TemplateFileName: "config/config.go.tmpl",
+				FileName:         "config/config.go",
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "configs/database.go.tmpl",
-				FileName:         "configs/database.go",
+				TemplateFileName: "config/database.go.tmpl",
+				FileName:         "config/database.go",
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "configs/elasticsearch.go.tmpl",
-				FileName:         "configs/elasticsearch.go",
+				TemplateFileName: "config/elasticsearch.go.tmpl",
+				FileName:         "config/elasticsearch.go",
 				Parse:            true,
 			},
 			{

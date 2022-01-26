@@ -19,7 +19,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 
-	"{{ .ModuleName }}/configs"
+	"{{ .ModuleName }}/config"
 	"{{ .ModuleName }}/internal/middleware"
 	db "{{ .ModuleName }}/third_party/database"
 	"{{ .ModuleName }}/third_party/validate"
@@ -32,7 +32,7 @@ const (
 
 type Server struct {
 	version    string
-	cfg        *configs.Configs
+	cfg        *config.Config
 	db         *sqlx.DB
 	router     *chi.Mux
 	httpServer *http.Server
@@ -42,7 +42,11 @@ type Server struct {
 type Options func(opts *Server) error
 
 func New(opts ...Options) *Server {
-	s := &Server{}
+	s := &Server{
+		cfg:    config.New(),
+		router: chi.NewRouter(),
+	}
+
 	for _, opt := range opts {
 		err := opt(s)
 		if err != nil {
@@ -52,20 +56,6 @@ func New(opts ...Options) *Server {
 	return s
 }
 
-func WithConfig() func(s *Server) error {
-	return func(s *Server) error {
-		s.cfg = configs.New()
-		return nil
-	}
-}
-
-func WithRouter() func(s *Server) error {
-	return func(s *Server) error {
-		s.router = chi.NewRouter()
-		return nil
-	}
-}
-
 func (s *Server) Init(version string) {
 	s.version = version
 	s.newConfig()
@@ -73,7 +63,7 @@ func (s *Server) Init(version string) {
 	s.newValidator()
 	s.newRouter()
     s.setGlobalMiddleware()
-	s.initDomains()
+	s.InitDomains()
 	s.startSwagger()
 }
 
@@ -84,7 +74,7 @@ func (s *Server) startSwagger() {
 }
 
 func (s *Server) newConfig() {
-	s.cfg = configs.New()
+	s.cfg = config.New()
 }
 
 func (s *Server) newDatabase() {
@@ -109,6 +99,7 @@ func (s *Server) setGlobalMiddleware() {
 		w.WriteHeader(http.StatusNotFound)
 		_, _ = w.Write([]byte(`{"error": "endpoint not found"}`))
 	})
+    s.router.Use(middleware.Json)
 	s.router.Use(middleware.CORS)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)
@@ -156,9 +147,6 @@ func (s *Server) Run() {
 	s.httpServer = &http.Server{
 		Addr:           s.cfg.Api.Host + ":" + s.cfg.Api.Port,
 		Handler:        s.router,
-		ReadTimeout:    s.cfg.Api.ReadTimeout,
-		WriteTimeout:   s.cfg.Api.WriteTimeout,
-		MaxHeaderBytes: 1 << 20,
 	}
 
 	fmt.Println(`            .,*/(#####(/*,.                               .,*((###(/*.
@@ -193,7 +181,7 @@ func (s *Server) Run() {
 	_ = s.httpServer.Shutdown(ctx)
 }
 
-func (s *Server) Config() *configs.Configs {
+func (s *Server) Config() *config.Config {
 	return s.cfg
 }
 
@@ -201,9 +189,15 @@ func (s *Server) DB() *sqlx.DB {
 	return s.db
 }
 
-func swaggerServer(router *chi.Mux) {
-    fileServer := http.FileServer(http.Dir(swaggerDocsAssetPath))
-    router.Handle("/swagger/*", http.StripPrefix("/swagger", fileServer))
+func (s *Server) initSwagger() {
+	if s.Config().Api.RunSwagger {
+		fileServer := http.FileServer(http.Dir(swaggerDocsAssetPath))
+		s.router.HandleFunc("/swagger", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)
+		})
+		s.router.Handle("/swagger/", http.StripPrefix("/swagger", middleware.Html(fileServer)))
+		s.router.Handle("/swagger/*", http.StripPrefix("/swagger", middleware.Html(fileServer)))
+	}
 }
 
 func (s *Server) PrintAllRegisteredRoutes() {

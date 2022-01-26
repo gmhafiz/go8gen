@@ -64,7 +64,7 @@ func (p *Project) InjectCode() error {
 func (p *Project) InjectImportDomainHandlerCode() error {
 	const initDomainsFile = "internal/server/initDomains.go"
 	const injectImport = "import ("
-	const injectInitDomains = "func (s *Server) initDomains() {"
+	const injectInitDomains = "func (s *Server) InitDomains() {"
 
 	initDomainsTmpl := fmt.Sprintf(`    s.init%s()`, p.Domain)
 

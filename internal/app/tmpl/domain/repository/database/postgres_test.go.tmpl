@@ -1,27 +1,15 @@
 package database
 
 import (
-	"fmt"
-	"log"
-	"net"
-	"os"
-	"runtime"
 	"testing"
 
 	_ "github.com/jackc/pgx/stdlib"
 	_ "github.com/joho/godotenv/autoload"
     "{{ .ModuleName }}/cmd/migrate/migrate"
 
-    "{{ .ModuleName }}/internal/domain/health/repository/database"
 )
 
-//go:generate mockgen -package mock -source ../../repository.go -destination=../../mock/mock_repository.go
-
-var (
-	repo database.Repository
-)
-
-const uniqueDBName = "postgres_test"
+//go:generate mockgen -package mock -source postgres.go -destination=../../mock/mock_postgres.go
 
 func TestMain(m *testing.M) {
 

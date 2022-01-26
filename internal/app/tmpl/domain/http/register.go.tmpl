@@ -13,7 +13,6 @@ func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc us
 	h := NewHandler(validator, uc)
 
 	router.Route("/api/v1/{{ .DomainLowerCase }}", func(router chi.Router) {
-		router.Use(middleware.Json)
 		router.Post("/", h.Create)
 		router.Get("/", h.List)
 		router.Get("/{id}", h.Read)
