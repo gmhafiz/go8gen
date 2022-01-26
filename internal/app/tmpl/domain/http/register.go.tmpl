@@ -5,8 +5,6 @@ import (
 	"github.com/go-playground/validator/v10"
 
     "{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}/usecase"
-	"{{ .ModuleName }}/internal/middleware"
-
 )
 
 func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc usecase.UseCase) {

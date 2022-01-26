@@ -14,6 +14,7 @@ import (
 
 func (s *Server) InitDomains() {
 	s.initVersion()
+    s.initSwagger()
     s.initHealth()
 }
 
@@ -25,6 +26,17 @@ func (s *Server) initVersion() {
 			respond.Json(w, http.StatusOK, map[string]string{"version": s.version})
 		})
 	})
+}
+
+func (s *Server) initSwagger() {
+	if s.Config().Api.RunSwagger {
+		fileServer := http.FileServer(http.Dir(swaggerDocsAssetPath))
+		s.router.HandleFunc("/swagger", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)
+		})
+		s.router.Handle("/swagger/", http.StripPrefix("/swagger", middleware.Html(fileServer)))
+		s.router.Handle("/swagger/*", http.StripPrefix("/swagger", middleware.Html(fileServer)))
+	}
 }
 
 func (s *Server) initHealth() {

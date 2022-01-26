@@ -203,6 +203,11 @@ var newCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
+				TemplateFileName: "middleware/html.go.tmpl",
+				FileName:         "internal/middleware/html.go",
+				Parse:            false,
+			},
+			{
 				TemplateFileName: "middleware/json.go.tmpl",
 				FileName:         "internal/middleware/json.go",
 				Parse:            true,

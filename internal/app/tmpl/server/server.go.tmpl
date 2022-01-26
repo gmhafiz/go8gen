@@ -64,13 +64,6 @@ func (s *Server) Init(version string) {
 	s.newRouter()
     s.setGlobalMiddleware()
 	s.InitDomains()
-	s.startSwagger()
-}
-
-func (s *Server) startSwagger() {
-	if s.cfg.Api.RunSwagger {
-		swaggerServer(s.router)
-	}
 }
 
 func (s *Server) newConfig() {
@@ -187,17 +180,6 @@ func (s *Server) Config() *config.Config {
 
 func (s *Server) DB() *sqlx.DB {
 	return s.db
-}
-
-func (s *Server) initSwagger() {
-	if s.Config().Api.RunSwagger {
-		fileServer := http.FileServer(http.Dir(swaggerDocsAssetPath))
-		s.router.HandleFunc("/swagger", func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)
-		})
-		s.router.Handle("/swagger/", http.StripPrefix("/swagger", middleware.Html(fileServer)))
-		s.router.Handle("/swagger/*", http.StripPrefix("/swagger", middleware.Html(fileServer)))
-	}
 }
 
 func (s *Server) PrintAllRegisteredRoutes() {
