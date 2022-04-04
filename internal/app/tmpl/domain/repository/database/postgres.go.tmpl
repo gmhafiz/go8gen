@@ -6,16 +6,15 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"{{ .ModuleName }}/internal/domain/{{ .DomainLowerCase }}"
-	"{{ .ModuleName }}/internal/models"
 )
 
 type Repository interface {
-	Create(ctx context.Context, {{ .Domain }} *models.{{ .Domain }}) (uint64, error)
-	CreateRead(ctx context.Context, {{ .Domain }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error)
-	List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{ .Domain }}, error)
-	Read(ctx context.Context, {{ .DomainLowerCase }}ID uint64) (*models.{{ .Domain }}, error)
+	Create(ctx context.Context, {{ .Domain }} *{{ .DomainLowerCase }}.{{ .Domain }}) (uint, error)
+	CreateRead(ctx context.Context, {{ .Domain }} *{{ .DomainLowerCase }}.{{ .Domain }}) (*models.{{ .Domain }}, error)
+	List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*{{ .DomainLowerCase }}.{{ .Domain }}, error)
+	Read(ctx context.Context, {{ .DomainLowerCase }}ID uint) (*{{ .DomainLowerCase }}.{{ .Domain }}, error)
 	Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) error
-	Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint64) error
+	Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint) error
 }
 
 type repository struct {
@@ -26,26 +25,26 @@ func New(db *sqlx.DB) *repository {
 	return &repository{db: db}
 }
 
-func (r *repository) Create(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }})(uint64, error) {
+func (r *repository) Create(ctx context.Context, {{ .DomainLowerCase }} *{{ .DomainLowerCase }}.{{ .Domain }})(uint, error) {
     panic("implement me")
 }
 
-func (r *repository) CreateRead(ctx context.Context, {{ .Domain }} *models.{{ .Domain }}) (*models.{{ .Domain }}, error) {
+func (r *repository) CreateRead(ctx context.Context, {{ .Domain }} *{{ .DomainLowerCase }}.{{ .Domain }}) (*{{ .DomainLowerCase }}.{{ .Domain }}, error) {
 	panic("implement me")
 }
 
-func (r *repository) List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*models.{{.Domain }}, error) {
+func (r *repository) List(ctx context.Context, f *{{ .DomainLowerCase }}.Filter) ([]*{{ .DomainLowerCase }}.{{ .Domain }}, error) {
 	panic("implement me")
 }
 
-func (r *repository) Read(ctx context.Context, {{ .DomainLowerCase }}ID uint64) (*models.{{.Domain}}, error) {
+func (r *repository) Read(ctx context.Context, {{ .DomainLowerCase }}ID uint) (*{{ .DomainLowerCase }}.{{ .Domain }}}, error) {
 	panic("implement me")
 }
 
-func (r *repository) Update(ctx context.Context, {{ .DomainLowerCase }} *models.{{ .Domain }}) error {
+func (r *repository) Update(ctx context.Context, {{ .DomainLowerCase }} *{{ .DomainLowerCase }}.{{ .Domain }}) error {
 	panic("implement me")
 }
 
-func (r *repository) Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint64) error {
+func (r *repository) Delete(ctx context.Context, {{ .DomainLowerCase }}ID uint) error {
 	panic("implement me")
 }

@@ -112,8 +112,8 @@ var domainCmd = &cobra.Command{
 				Parse:            true,
 			},
 			{
-				TemplateFileName: "../tmpl/models/model.go.tmpl",
-				FileName:         fmt.Sprintf("internal/models/%s.go", p.DomainLowerCase),
+				TemplateFileName: "../tmpl/domain/model.go.tmpl",
+				FileName:         fmt.Sprintf("internal/domain/%s.go", p.DomainLowerCase),
 				Parse:            true,
 			},
 		}

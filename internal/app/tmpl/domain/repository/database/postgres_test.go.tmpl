@@ -3,13 +3,8 @@ package database
 import (
 	"testing"
 
-	_ "github.com/jackc/pgx/stdlib"
-	_ "github.com/joho/godotenv/autoload"
     "{{ .ModuleName }}/cmd/migrate/migrate"
-
 )
-
-//go:generate mockgen -package mock -source postgres.go -destination=../../mock/mock_postgres.go
 
 func TestMain(m *testing.M) {
 
