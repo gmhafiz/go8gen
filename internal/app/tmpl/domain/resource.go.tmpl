@@ -1,28 +1,20 @@
 package {{ .DomainLowerCase }}
 
-import (
-	"github.com/jinzhu/copier"
-
-	"{{ .ModuleName }}/internal/models"
-)
-
 type Res struct {
-	{{ .Domain }}ID        uint64       `json:"id" deepcopier:"field:id"`
-	// FieldName         string      `json:"field_name" deepcopier:"field:field_name"`
+	{{ .Domain }}ID        uint       `json:"id"`
+	// FieldName         string      `json:"field_name"`
 }
 
-func Resource({{ .DomainLowerCase }} *models.{{ .Domain }}) (Res, error) {
-	var resource Res
+func Resource({{ .DomainLowerCase }} *{{ .Domain }}) (Res, error) {
 
-	err := copier.Copy(&resource, &{{ .DomainLowerCase }})
-	if err != nil {
-		return resource, err
+	resource := Res{
+		{{ .Domain }}ID: {{ .DomainLowerCase }.ID,
 	}
 
 	return resource, nil
 }
 
-func Resources({{ .DomainLowerCase }}s []*models.{{ .Domain }}) ([]Res, error) {
+func Resources({{ .DomainLowerCase }}s []*{{ .Domain }}) ([]Res, error) {
 	if len({{ .DomainLowerCase }}s) == 0 {
 		return make([]Res, 0), nil
 	}

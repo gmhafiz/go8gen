@@ -3,8 +3,6 @@ package {{ .DomainLowerCase }}
 import (
 	"encoding/json"
 	"io"
-
-	"{{ .ModuleName }}/internal/models"
 )
 
 type Request struct {
@@ -17,8 +15,8 @@ func (r *Request) Bind(body io.ReadCloser) error {
 	return json.NewDecoder(body).Decode(r)
 }
 
-func To{{ .Domain }}(req *Request) *models.{{ .Domain }} {
-	return &models.{{ .Domain }}{
+func To{{ .Domain }}(req *Request) *{{ .Domain }} {
+	return &{{ .Domain }}{
 		// {{ "{{ FieldName }}" }}:         req.{{ "{{ req.fieldName }}" }},
 	}
 }

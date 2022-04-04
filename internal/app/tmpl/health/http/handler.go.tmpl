@@ -31,7 +31,7 @@ func NewHandler(useCase usecase.UseCase, validate *validator.Validate) *Handler 
 // @Description Hits this API to see if API is running in the server
 // @Success 200
 // @Failure 500
-// @Router /health/liveness [get]
+// @Router /api/health/liveness [get]
 func (h *Handler) Liveness(w http.ResponseWriter, r *http.Request) {
 	respond.Json(w, http.StatusOK, nil)
 }
@@ -41,7 +41,7 @@ func (h *Handler) Liveness(w http.ResponseWriter, r *http.Request) {
 // @Description Hits this API to see if both API and Database are running in the server
 // @Success 200
 // @Failure 500
-// @Router /health/readiness [get]
+// @Router /api/health/readiness [get]
 func (h *Handler) Readiness(w http.ResponseWriter, r *http.Request) {
 	err := h.useCase.Readiness()
 	if err != nil {

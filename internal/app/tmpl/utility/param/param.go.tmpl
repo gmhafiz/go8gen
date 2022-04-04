@@ -9,16 +9,16 @@ import (
 	"{{ .ModuleName }}/internal/utility/respond"
 )
 
-func UInt64(w http.ResponseWriter, r *http.Request, param string) uint64 {
+func uint(w http.ResponseWriter, r *http.Request, param string) uint {
 	val, err := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, err)
 	}
 
-	return uint64(val)
+	return uint(val)
 }
 
-func Int64(w http.ResponseWriter, r *http.Request, param string) int64 {
+func int(w http.ResponseWriter, r *http.Request, param string) int {
 	val, err := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, err)

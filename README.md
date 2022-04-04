@@ -55,12 +55,12 @@ example:
 To run:
 
     cd <projectName>
-    go run cmd/<projectName>/<projectName>.go
+    go run cmd/<projectName>/main.go
     
     2021/01/01 13:48:01 API version: v0.1.0
     2021/01/01 13:48:01 serving at 0.0.0.0:3080
-    2021/01/01 13:48:01 path: /health/liveness method: GET
-    2021/01/01 13:48:01 path: /health/readiness method: GET
+    2021/01/01 13:48:01 path: /api/health/liveness method: GET
+    2021/01/01 13:48:01 path: /api/health/readiness method: GET
 
     curl -XGET http://localhost:3080/health/liveness
 
@@ -106,6 +106,10 @@ example:
 
  * Initial starter kit boilerplate for Go + Postgres + Chi Router + SqlBoiler  API Development
  
+
+# TODO
+
+[ ] use `ast` package to parse files 
 
 # License
 
